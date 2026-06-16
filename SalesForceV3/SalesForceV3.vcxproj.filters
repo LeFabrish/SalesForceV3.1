@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Model">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Service">
+      <UniqueIdentifier>{9fb09064-7a8a-48ea-9ffc-d6b83f96391a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Estructure">
+      <UniqueIdentifier>{695f91f7-dba1-4508-8e6f-f739b1624b18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Ventas">
+      <UniqueIdentifier>{82a6157b-8475-47d4-9f0c-3405d75db9eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Clientes">
+      <UniqueIdentifier>{2d4efa86-409d-4d59-9ab1-a51a96ae722b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Soporte">
+      <UniqueIdentifier>{ad609a69-2514-4c42-86b7-64eb4fa6daab}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="principal.cpp" />
+    <ClCompile Include="FrmPrincipalh.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="FrmClientes.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="FrmVentas.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="FrmSoporte.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FrmPrincipalh.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Sistemacrm.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="FrmClientes.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="FrmVentas.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="FrmSoporte.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="HashTable.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="GestorCliente.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="GestorVenta.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="GestorSoporte.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="DataSetGenerator.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="ListaSimple.h">
+      <Filter>Estructure</Filter>
+    </ClInclude>
+    <ClInclude Include="ListaDoble.h">
+      <Filter>Estructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Pila.h">
+      <Filter>Estructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Cola.h">
+      <Filter>Estructure</Filter>
+    </ClInclude>
+    <ClInclude Include="MashallHelper.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Ordenador.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="NodoD.h">
+      <Filter>Estructure</Filter>
+    </ClInclude>
+    <ClInclude Include="NodoS.h">
+      <Filter>Estructure</Filter>
+    </ClInclude>
+    <ClInclude Include="Cotizacion.h">
+      <Filter>Model\Ventas</Filter>
+    </ClInclude>
+    <ClInclude Include="Cuenta.h">
+      <Filter>Model\Clientes</Filter>
+    </ClInclude>
+    <ClInclude Include="Direccion.h">
+      <Filter>Model\Clientes</Filter>
+    </ClInclude>
+    <ClInclude Include="Evento.h">
+      <Filter>Model\Soporte</Filter>
+    </ClInclude>
+    <ClInclude Include="GestorArchivos.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="Historial.h">
+      <Filter>Model\Soporte</Filter>
+    </ClInclude>
+    <ClInclude Include="Oportunidad.h">
+      <Filter>Model\Ventas</Filter>
+    </ClInclude>
+    <ClInclude Include="Producto.h">
+      <Filter>Model\Ventas</Filter>
+    </ClInclude>
+    <ClInclude Include="Solucion.h">
+      <Filter>Model\Soporte</Filter>
+    </ClInclude>
+    <ClInclude Include="Tarea.h">
+      <Filter>Model\Soporte</Filter>
+    </ClInclude>
+    <ClInclude Include="UsuarioCRM.h">
+      <Filter>Model\Clientes</Filter>
+    </ClInclude>
+    <ClInclude Include="Caso.h">
+      <Filter>Model\Soporte</Filter>
+    </ClInclude>
+    <ClInclude Include="Contacto.h">
+      <Filter>Model\Clientes</Filter>
+    </ClInclude>
+    <ClInclude Include="Interaccion.h">
+      <Filter>Model\Clientes</Filter>
+    </ClInclude>
+    <ClInclude Include="Cliente_Potencial.h">
+      <Filter>Model\Ventas</Filter>
+    </ClInclude>
+    <ClInclude Include="Contrato.h">
+      <Filter>Model\Ventas</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="casos.txt">
+      <Filter>Resource</Filter>
+    </Text>
+    <Text Include="cuentas.txt">
+      <Filter>Resource</Filter>
+    </Text>
+    <Text Include="productos.txt">
+      <Filter>Resource</Filter>
+    </Text>
+    <Text Include="usuarios.txt">
+      <Filter>Resource</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

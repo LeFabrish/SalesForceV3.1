@@ -1,0 +1,3 @@
+C:\Users\Lenovo\source\repos\SalesForceV3\SalesForceV3\x64\Debug\SalesForceV3.vcxproj.AssemblyReference.cache
+C:\Users\Lenovo\source\repos\SalesForceV3\SalesForceV3\x64\Debug\SalesForceV3.FrmPrincipalh.resources
+C:\Users\Lenovo\source\repos\SalesForceV3\SalesForceV3\x64\Debug\SalesForceV3.vcxproj.GenerateResource.cache

@@ -1,0 +1,30 @@
+1,CRM Basic,1500.00,Software
+2,CRM Enterprise,5000.00,Software
+3,Consultoria,200.00,Servicio
+4,Soporte Premium,800.00,Servicio
+5,Integracion API,3000.00,Desarrollo
+6,Capacitacion,500.00,Formacion
+7,Cloud Hosting,350.00,Infraestructura
+8,Analytics Plus,2000.00,Software
+9,Modulo Ventas,1200.00,Software
+10,Modulo Inventario,900.00,Software
+11,Modulo Facturacion,1100.00,Software
+12,App Movil,2500.00,Desarrollo
+13,Seguridad Perimetral,1800.00,Infraestructura
+14,Backup Automatico,400.00,Infraestructura
+15,Auditoria TI,700.00,Servicio
+16,Gestion de Proyectos,600.00,Servicio
+17,Data Warehouse,3200.00,Desarrollo
+18,BI Dashboard,1500.00,Software
+19,CRM Personalizado,4500.00,Desarrollo
+20,Soporte 24/7,900.00,Servicio
+21,Formacion Avanzada,750.00,Formacion
+22,Cloud Privado,2800.00,Infraestructura
+23,Api Gateway,1200.00,Desarrollo
+24,Herramienta ETL,2100.00,Software
+25,Portal Cliente,1800.00,Desarrollo
+26,Monitorizacion,650.00,Infraestructura
+27,Informes Personalizados,1300.00,Servicio
+28,Workshop Agile,500.00,Formacion
+29,Contenedores Docker,900.00,Infraestructura
+30,Orquestacion Kubernetes,1600.00,Infraestructura

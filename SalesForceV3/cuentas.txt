@@ -1,0 +1,30 @@
+1,Claro Peru,Telecomunicaciones,01-630-3000,info@claro.com.pe,Peru,Lima,Miraflores,Av. La Marina 600
+2,BCP,Banca,01-311-9898,info@viabcp.com,Peru,Lima,San Isidro,Av. Centenario 156
+3,Interbank,Banca,01-219-2000,contacto@interbank.pe,Peru,Lima,La Molina,Av. Benavides 200
+4,Alicorp,Consumo Masivo,01-315-0800,info@alicorp.pe,Peru,Lima,Callao,Jr. Lima 100
+5,Falabella Peru,Retail,01-610-0000,clientes@falabella.pe,Peru,Lima,San Borja,Av. Angamos 888
+6,Movistar Peru,Telecomunicaciones,01-200-0000,soporte@movistar.com.pe,Peru,Lima,Santiago de Surco,Av. Arequipa 1100
+7,Santander Chile,Banca,02-234-5678,contacto@santander.cl,Chile,Santiago,Las Condes,Av. Apoquindo 3000
+8,Cencosud,Retail,02-244-4000,info@cencosud.cl,Chile,Santiago,Providencia,Av. Los Leones 1200
+9,Bancolombia,Banca,01-234-5678,atencion@bancolombia.com,Colombia,Bogota,Chapinero,Calle 72 #10-20
+10,Avianca,Transporte,01-234-5678,servicio@avianca.com,Colombia,Bogota,El Dorado,Av. El Dorado 100
+11,Grupo Bimbo,Alimentos,55-1234-5678,info@grupobimbo.com,Mexico,Ciudad de Mexico,Benito Juarez,Av. Insurgentes 1500
+12,América Móvil,Telecomunicaciones,55-4567-8901,atencion@americamovil.com,Mexico,Ciudad de Mexico,Coyoacan,Av. Universidad 1200
+13,Itaú Brasil,Banca,11-3456-7890,atendimento@itau.com,Brasil,Sao Paulo,Centro,Av. Paulista 1000
+14,Bradesco,Banca,11-4567-8901,sac@bradesco.com,Brasil,Sao Paulo,Vila Olímpia,Av. Engenheiro 200
+15,Petrobras,Energia,21-2345-6789,atendimento@petrobras.com,Brasil,Rio de Janeiro,Centro,Av. Vargas 300
+16,YPF,Energia,011-4321-6543,contacto@ypf.com,Argentina,Buenos Aires,Palermo,Av. Libertador 500
+17,Telecom Argentina,Telecomunicaciones,011-4567-8901,atencion@telecom.com.ar,Argentina,Buenos Aires,Belgrano,Av. Cabildo 2000
+18,Globant,Tecnologia,011-9876-5432,info@globant.com,Argentina,Buenos Aires,Recoleta,Av. Santa Fe 1200
+19,Entel Peru,Telecomunicaciones,01-213-4567,atencion@entel.pe,Peru,Lima,San Miguel,Av. La Mar 500
+20,Ripley Peru,Retail,01-612-3456,contacto@ripley.pe,Peru,Lima,Surquillo,Av. Angamos 300
+21,Tottus,Retail,01-214-5678,sac@tottus.com,Peru,Lima,Santa Anita,Av. Los Pinos 400
+22,BBVA Peru,Banca,01-211-1111,atencion@bbva.pe,Peru,Lima,San Isidro,Av. Salaverry 200
+23,Scotiabank Peru,Banca,01-234-4444,contacto@scotiabank.pe,Peru,Lima,Lince,Av. Arequipa 700
+24,Microsoft Peru,Tecnologia,01-600-2222,info@microsoft.com.pe,Peru,Lima,Miraflores,Av. Jose Pardo 100
+25,IBM Chile,Tecnologia,02-230-5000,contacto@ibm.cl,Chile,Santiago,Las Condes,Av. Presidente Riesco 4000
+26,Oracle Colombia,Tecnologia,01-235-6789,atencion@oracle.com.co,Colombia,Bogota,Usaquén,Calle 100 #10-50
+27,SAP Mexico,Tecnologia,55-4567-8901,contacto@sap.com.mx,Mexico,Ciudad de Mexico,Polanco,Av. Reforma 600
+28,Accenture Argentina,Tecnologia,011-4500-1234,info@accenture.com.ar,Argentina,Buenos Aires,Microcentro,Av. Corrientes 1200
+29,Deloitte Peru,Consultoria,01-211-8000,contacto@deloitte.com,Peru,Lima,San Borja,Av. Javier Prado Este 500
+30,EY Chile,Consultoria,02-234-5678,info@ey.cl,Chile,Santiago,Vitacura,Av. Vitacura 3000

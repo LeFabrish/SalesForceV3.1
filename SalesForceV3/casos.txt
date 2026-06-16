@@ -1,0 +1,30 @@
+1,Error en modulo de pagos,Abierto,Alta
+2,Integracion con ERP fallida,En Proceso,Media
+3,Dashboard no carga datos,Cerrado,Baja
+4,Solicitud nueva funcionalidad,Abierto,Media
+5,Problemas de rendimiento en reportes,En Proceso,Alta
+6,Fallo en autenticacion de usuarios,Abierto,Alta
+7,Retraso en generacion de facturas,En Proceso,Media
+8,Error al exportar a Excel,Cerrado,Baja
+9,API no responde,Abierto,Alta
+10,Problema con notificaciones por email,En Proceso,Media
+11,Solicitud de copia de seguridad,Cerrado,Baja
+12,Incidente de seguridad detectado,Abierto,Alta
+13,Actualizacion fallida del sistema,En Proceso,Alta
+14,Datos duplicados en base de datos,Cerrado,Media
+15,Consulta sobre licencias,Abierto,Baja
+16,Error en el modulo de inventario,En Proceso,Alta
+17,Problema de sincronizacion con movil,Cerrado,Media
+18,Solicitud de extension de prueba,Abierto,Baja
+19,Caida del servidor de aplicaciones,En Proceso,Alta
+20,Error en el flujo de aprobacion,Cerrado,Media
+21,Peticion de cambio de interfaz,Abierto,Baja
+22,Inconsistencia en reportes financieros,En Proceso,Alta
+23,Problema con la impresion de documentos,Cerrado,Baja
+24,Solicitud de auditoria de seguridad,Abierto,Alta
+25,Error en calculo de comisiones,En Proceso,Media
+26,Caida del portal de clientes,Cerrado,Alta
+27,Problema de respuesta lenta en busquedas,Abierto,Media
+28,Solicitud de formacion avanzada,Cerrado,Baja
+29,Error al cargar adjuntos,En Proceso,Media
+30,Reclamacion por tiempo de inactividad,Abierto,Alta
