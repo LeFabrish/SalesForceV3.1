@@ -49,8 +49,8 @@ namespace SalesForceV3 {
         void CrearUI() {
             this->Text = "Embudo de Ventas";
             this->BackColor = EstiloCRM::GrisClaro();
-            CrearMiniSidebar();
             CrearAreaContenido();
+            CrearMiniSidebar();
         }
 
         void CrearMiniSidebar() {

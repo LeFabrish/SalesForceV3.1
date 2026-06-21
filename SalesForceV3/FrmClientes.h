@@ -59,8 +59,8 @@ namespace SalesForceV3 {
         void CrearUI() {
             this->Text = "Gestion de Clientes";
             this->BackColor = EstiloCRM::GrisClaro();
-            CrearMiniSidebar();
             CrearAreaContenido();
+            CrearMiniSidebar();
         }
 
         void CrearMiniSidebar() {
