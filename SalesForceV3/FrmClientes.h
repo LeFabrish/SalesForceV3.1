@@ -335,7 +335,7 @@ namespace SalesForceV3 {
         void ActualizarEstadisticasHash() {
             // No acceder directamente a miembros privados de GestorCliente (hashCuentas)
             lblHashStats->Text =
-                "Estadisticas de la Hash Table (encadenamiento separado  |  hash FNV-1a + Fibonacci):\r\n"
+                "Estadisticas de la Hash Table (encadenamiento separado  |  hash polinomial propio h=h*31+caracter):\r\n"
                 "  Elementos: " + gestor->getHashTamanio() + "\r\n"
                 "  Capacidad: " + gestor->getHashCapacidad() + " buckets\r\n"
                 "  Factor de carga: " + (gestor->getHashFactorCarga() * 100).ToString("F1") + " %\r\n"
@@ -356,12 +356,12 @@ namespace SalesForceV3 {
         //  EVENTOS — BOTONES ACCIÓN
         // ═══════════════════════════════════════════════════════════
         void accion1_Click(Object^, EventArgs^) {
-            // Agregar fila vacía con ID auto-asignado
-            dgvDatos->Rows->Add(SiguienteId());
-            dgvDatos->CurrentCell = dgvDatos->Rows[dgvDatos->Rows->Count - 1]->Cells[1];
+            int indiceNuevo = dgvDatos->Rows->Add();
+            dgvDatos->Rows[indiceNuevo]->Cells[0]->Value = SiguienteId();
+            dgvDatos->CurrentCell = dgvDatos->Rows[indiceNuevo]->Cells[1];
         }
-
         void accion2_Click(Object^, EventArgs^) {
+            dgvDatos->EndEdit();
             if (dgvDatos->SelectedRows->Count == 0) return;
             if (MessageBox::Show("¿Eliminar la fila seleccionada?", "Confirmar",
                 MessageBoxButtons::YesNo, MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::Yes)
@@ -369,6 +369,12 @@ namespace SalesForceV3 {
         }
 
         void accion3_Click(Object^, EventArgs^) {
+            // EndEdit() confirma el valor que el usuario esta escribiendo en la celda
+            // activa. Sin esto, si se hace clic en "Guardar" justo despues de teclear
+            // (sin Tab/Enter), esa ultima celda no se copio aun a Cells[i]->Value y el
+            // dato se pierde o se lee como vacio/0 (la causa mas probable del "se
+            // guarda con indice 0" reportado).
+            dgvDatos->EndEdit();
             GuardarVistaActual();
             MessageBox::Show("Datos guardados correctamente.", "OK",
                 MessageBoxButtons::OK, MessageBoxIcon::Information);
@@ -400,13 +406,27 @@ namespace SalesForceV3 {
 
         void GuardarContactos() {
             gestor->limpiarContactos();
+            bool hayContactoSinCuenta = false;
             for each (DataGridViewRow ^ r in dgvDatos->Rows) {
                 if (r->IsNewRow || Str::Celda(r->Cells[1]) == "") continue;
+                int idCuenta = Str::CeldaInt(r->Cells[6]);
+                // "ID Cuenta" en blanco se lee como 0 (ver Str::CeldaInt). Se guarda el
+                // contacto igual, para no perder lo que el usuario escribio, pero se
+                // avisa para que no quede vinculado a una cuenta inexistente sin darse
+                // cuenta — esto es lo que se percibia como "se guarda con indice 0".
+                if (idCuenta == 0) hayContactoSinCuenta = true;
                 Contacto c(Str::CeldaInt(r->Cells[0]), Str::N(Str::Celda(r->Cells[1])),
                     Str::N(Str::Celda(r->Cells[2])), Str::N(Str::Celda(r->Cells[3])),
                     Str::N(Str::Celda(r->Cells[4])), Str::N(Str::Celda(r->Cells[5])),
-                    Str::CeldaInt(r->Cells[6]), Direccion("", "", "", ""));
+                    idCuenta, Direccion("", "", "", ""));
                 gestor->insertarContacto(c);
+            }
+            gestor->guardarContactos();
+            if (hayContactoSinCuenta) {
+                MessageBox::Show(
+                    "Uno o mas contactos se guardaron sin una 'ID Cuenta' valida (quedo en 0).\n"
+                    "Revisa esa columna si el contacto debe estar vinculado a una cuenta.",
+                    "Aviso", MessageBoxButtons::OK, MessageBoxIcon::Warning);
             }
         }
 
@@ -419,6 +439,7 @@ namespace SalesForceV3 {
                     Str::N(Str::Celda(r->Cells[4])), Str::N(Str::Celda(r->Cells[5])));
                 gestor->insertarUsuario(u);
             }
+            gestor->guardarUsuarios();
         }
 
         void GuardarInteracciones() {
@@ -430,9 +451,10 @@ namespace SalesForceV3 {
                     Str::CeldaInt(r->Cells[4]), Str::CeldaInt(r->Cells[5]));
                 gestor->insertarInteraccion(i);
             }
+            gestor->guardarInteracciones();
         }
 
-        // ─── HashTable ────────────────────────────────────────────
+        //====== HashTable ======
         void buscarHash_Click(Object^, EventArgs^) {
             std::string nombre = Str::N(txtBusqueda->Text->Trim());
             Cuenta* res = gestor->buscarCuentaHash(nombre);
@@ -451,7 +473,7 @@ namespace SalesForceV3 {
             ActualizarEstadisticasHash();
         }
 
-        // ─── Navegación mini-sidebar ──────────────────────────────
+        // ====== Navegación mini-sidebar ======
         void navCuentas_Click(Object^, EventArgs^) { btnNavActivo = btnNavCuentas;       CambiarVista(Vista::Cuentas, btnNavCuentas); }
         void navContactos_Click(Object^, EventArgs^) { btnNavActivo = btnNavContactos;     CambiarVista(Vista::Contactos, btnNavContactos); }
         void navUsuarios_Click(Object^, EventArgs^) { btnNavActivo = btnNavUsuarios;      CambiarVista(Vista::Usuarios, btnNavUsuarios); }

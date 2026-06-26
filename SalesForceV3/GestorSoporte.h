@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <vector>
 #include "Cola.h"
 #include "Pila.h"
 #include "ListaSimple.h"
@@ -91,6 +92,34 @@ public:
     Pila<Solucion>* getPilaSoluciones() { return &pilaSoluciones; }
     int getProximoIdSolucion() { return contSolucion; }
 
+    void guardarSoluciones() const {
+        auto* lineas = new ListaSimple<string>();
+        std::vector<Solucion> v = pilaSoluciones.toVector();      // tope -> base
+        for (auto it = v.rbegin(); it != v.rend(); ++it) {        // recorrido base -> tope
+            Solucion& s = *it;
+            ostringstream ss;
+            ss << s.getId() << "," << s.getIdCasoAsociado() << "," << s.getDescripcion()
+                << "," << s.getFechaResolucion();
+            lineas->insertar(ss.str());
+        }
+        gestor.guardarLineas("soluciones.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarSoluciones() {
+        while (!pilaSoluciones.estaVacia()) pilaSoluciones.pop();
+        ListaSimple<string>* lineas = gestor.cargarLineas("soluciones.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Solucion s(stoi(GestorArchivos::campo(l, 0)), stoi(GestorArchivos::campo(l, 1)),
+                GestorArchivos::campo(l, 2), GestorArchivos::campo(l, 3));
+            apilarSolucion(s);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
+
     // ─── TAREAS (Cola FIFO) ───────────────────────────────────────
     void encolarTarea(Tarea t) {
         if (t.getId() == 0) t.setId(contTarea++);
@@ -101,6 +130,35 @@ public:
     void atenderTarea() { if (!colaTareas.estaVacia()) colaTareas.dequeue(); }
     Cola<Tarea>* getColaTareas() { return &colaTareas; }
     int getProximoIdTarea() { return contTarea; }
+
+    void guardarTareas() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoS<Tarea>* n = colaTareas.getFrenteNodo();
+        while (n) {
+            Tarea& t = n->dato;
+            ostringstream ss;
+            ss << t.getId() << "," << t.getDescripcion() << "," << t.getEstado() << ","
+                << t.getFechaLimite();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("tareas.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarTareas() {
+        colaTareas.limpiar();
+        ListaSimple<string>* lineas = gestor.cargarLineas("tareas.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Tarea t(stoi(GestorArchivos::campo(l, 0)), GestorArchivos::campo(l, 1),
+                GestorArchivos::campo(l, 2), GestorArchivos::campo(l, 3));
+            encolarTarea(t);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
 
     // ─── EVENTOS (ListaSimple) ────────────────────────────────────
     void insertarEvento(Evento e) {
@@ -118,6 +176,35 @@ public:
     ListaSimple<Evento>* getListaEventos() { return &listaEventos; }
     int getProximoIdEvento() { return contEvento; }
 
+    void guardarEventos() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoS<Evento>* n = listaEventos.getCabeza();
+        while (n) {
+            Evento& e = n->dato;
+            ostringstream ss;
+            ss << e.getId() << "," << e.getTitulo() << "," << e.getFechaHora() << ","
+                << e.getUbicacion();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("eventos.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarEventos() {
+        limpiarEventos();
+        ListaSimple<string>* lineas = gestor.cargarLineas("eventos.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Evento e(stoi(GestorArchivos::campo(l, 0)), GestorArchivos::campo(l, 1),
+                GestorArchivos::campo(l, 2), GestorArchivos::campo(l, 3));
+            insertarEvento(e);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
+
     // ─── HISTORIAL (Pila LIFO) ────────────────────────────────────
     void apilarHistorial(Historial h) {
         if (h.getId() == 0) h.setId(contHistorial++);
@@ -129,6 +216,50 @@ public:
     Historial& verTopeHistorial() { return pilaHistorial.peek(); }
     Pila<Historial>* getPilaHistorial() { return &pilaHistorial; }
     int getProximoIdHistorial() { return contHistorial; }
+
+    void guardarHistorial() const {
+        auto* lineas = new ListaSimple<string>();
+        std::vector<Historial> v = pilaHistorial.toVector();      // tope -> base
+        for (auto it = v.rbegin(); it != v.rend(); ++it) {        // recorrido base -> tope
+            Historial& h = *it;
+            ostringstream ss;
+            ss << h.getId() << "," << h.getModuloAsociado() << "," << h.getAccion() << ","
+                << h.getFecha();
+            lineas->insertar(ss.str());
+        }
+        gestor.guardarLineas("historial.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarHistorial() {
+        while (!pilaHistorial.estaVacia()) pilaHistorial.pop();
+        ListaSimple<string>* lineas = gestor.cargarLineas("historial.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Historial h(stoi(GestorArchivos::campo(l, 0)), GestorArchivos::campo(l, 1),
+                GestorArchivos::campo(l, 2), GestorArchivos::campo(l, 3));
+            apilarHistorial(h);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
+
+    void guardarTodo() const {
+        guardarCasos();
+        guardarSoluciones();
+        guardarTareas();
+        guardarEventos();
+        guardarHistorial();
+    }
+
+    void cargarTodo() {
+        cargarCasos();
+        cargarSoluciones();
+        cargarTareas();
+        cargarEventos();
+        cargarHistorial();
+    }
 };
 
 #pragma managed(pop)

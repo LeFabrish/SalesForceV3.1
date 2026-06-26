@@ -352,17 +352,22 @@ namespace SalesForceV3 {
             if (vistaActual == Vista::Clientes) {
                 Cliente_Potencial c(gestor->getProximoIdCliente(), "Nuevo", "correo@ejemplo.pe", "Servicio");
                 gestor->encolarCliente(c);
+                // Esta cola no tiene un boton "Guardar" propio: se persiste al instante.
+                gestor->guardarClientes();
                 ConfigurarClientes();
             }
             else {
-                dgvDatos->Rows->Add(SiguienteId());
-                dgvDatos->CurrentCell = dgvDatos->Rows[dgvDatos->Rows->Count - 1]->Cells[1];
+                int indiceNuevo = dgvDatos->Rows->Add();
+                dgvDatos->Rows[indiceNuevo]->Cells[0]->Value = SiguienteId();
+                dgvDatos->CurrentCell = dgvDatos->Rows[indiceNuevo]->Cells[1];
             }
         }
 
         void accion2_Click(Object^, EventArgs^) {
+            dgvDatos->EndEdit();
             if (vistaActual == Vista::Clientes) {
                 gestor->atenderCliente();
+                gestor->guardarClientes();
                 ConfigurarClientes();
                 return;
             }
@@ -387,6 +392,7 @@ namespace SalesForceV3 {
                         Str::CeldaDbl(r->Cells[2]), Str::N(Str::Celda(r->Cells[3])));
                     gestor->insertarOportunidad(o);
                 }
+                gestor->guardarOportunidades();
             }
             else if (vistaActual == Vista::Productos) {
                 gestor->limpiarProductos();
@@ -397,6 +403,29 @@ namespace SalesForceV3 {
                     gestor->insertarProducto(p);
                 }
                 gestor->guardarProductos();
+            }
+            else if (vistaActual == Vista::Cotizaciones) {
+                // Antes esta vista no tenia rama aqui: los cambios se veian en la
+                // grilla pero se perdian al volver a cargarla (ni siquiera llegaban
+                // a la lista en memoria).
+                gestor->limpiarCotizaciones();
+                for each (DataGridViewRow ^ r in dgvDatos->Rows) {
+                    if (r->IsNewRow || Str::Celda(r->Cells[1]) == "") continue;
+                    Cotizacion c(Str::CeldaInt(r->Cells[0]), Str::CeldaDbl(r->Cells[1]),
+                        Str::N(Str::Celda(r->Cells[2])), Str::N(Str::Celda(r->Cells[3])));
+                    gestor->insertarCotizacion(c);
+                }
+                gestor->guardarCotizaciones();
+            }
+            else if (vistaActual == Vista::Contratos) {
+                gestor->limpiarContratos();
+                for each (DataGridViewRow ^ r in dgvDatos->Rows) {
+                    if (r->IsNewRow || Str::Celda(r->Cells[1]) == "") continue;
+                    Contrato c(Str::CeldaInt(r->Cells[0]), Str::N(Str::Celda(r->Cells[1])),
+                        Str::N(Str::Celda(r->Cells[2])), Str::CeldaDbl(r->Cells[3]));
+                    gestor->insertarContrato(c);
+                }
+                gestor->guardarContratos();
             }
         }
 

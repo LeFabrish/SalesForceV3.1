@@ -288,23 +288,32 @@ namespace SalesForceV3 {
         // ═══════════════════════════════════════════════════════════
         //  EVENTOS
         // ═══════════════════════════════════════════════════════════
+        
         void accion1_Click(Object^, EventArgs^) {
             switch (vistaActual) {
             case Vista::Casos:
                 gestor->encolarCaso({ 0, "Nuevo caso", "Abierto", "Media" });
-                ConfigurarCasos(); break;
+                gestor->guardarCasos();   // Casos/Soluciones/Tareas/Historial no tienen
+                ConfigurarCasos(); break; // boton "Guardar": se persiste al instante.
             case Vista::Soluciones:
                 gestor->apilarSolucion({ 0, 0, "Nueva solucion", "01/01/2025" });
+                gestor->guardarSoluciones();
                 ConfigurarSoluciones(); break;
             case Vista::Tareas:
                 gestor->encolarTarea({ 0, "Nueva tarea", "Pendiente", "30/12/2025" });
+                gestor->guardarTareas();
                 ConfigurarTareas(); break;
-            case Vista::Eventos:
-                dgvDatos->Rows->Add(SiguienteId());
-                dgvDatos->CurrentCell = dgvDatos->Rows[dgvDatos->Rows->Count - 1]->Cells[1];
+            case Vista::Eventos: {
+                // Llaves nuevas alrededor de este case: se declara una variable local
+                // (indiceNuevo) y en un switch eso exige un bloque propio.
+                int indiceNuevo = dgvDatos->Rows->Add();
+                dgvDatos->Rows[indiceNuevo]->Cells[0]->Value = SiguienteId();
+                dgvDatos->CurrentCell = dgvDatos->Rows[indiceNuevo]->Cells[1];
                 break;
+            }
             case Vista::Historial:
                 gestor->apilarHistorial({ 0, "Sistema", "Accion manual", "01/01/2025" });
+                gestor->guardarHistorial();
                 ConfigurarHistorial(); break;
             }
         }
@@ -318,16 +327,19 @@ namespace SalesForceV3 {
                 MessageBox::Show("Atendiendo: " + Str::M(gestor->getColaCasos()->getFrente().getAsunto()),
                     "Caso atendido", MessageBoxButtons::OK, MessageBoxIcon::Information);
                 gestor->atenderCaso();
+                gestor->guardarCasos();
                 ConfigurarCasos(); break;
             case Vista::Soluciones:
                 if (gestor->getPilaSoluciones()->estaVacia()) return;
                 gestor->desapilarSolucion();
+                gestor->guardarSoluciones();
                 ConfigurarSoluciones(); break;
             case Vista::Tareas:
                 if (gestor->getColaTareas()->estaVacia()) return;
                 MessageBox::Show("Completando: " + Str::M(gestor->getColaTareas()->getFrente().getDescripcion()),
                     "Tarea completada", MessageBoxButtons::OK, MessageBoxIcon::Information);
                 gestor->atenderTarea();
+                gestor->guardarTareas();
                 ConfigurarTareas(); break;
             case Vista::Eventos:
                 if (dgvDatos->SelectedRows->Count == 0) return;
@@ -335,11 +347,13 @@ namespace SalesForceV3 {
             case Vista::Historial:
                 if (gestor->getPilaHistorial()->estaVacia()) return;
                 gestor->desapilarHistorial();
+                gestor->guardarHistorial();
                 ConfigurarHistorial(); break;
             }
         }
 
         void accion3_Click(Object^, EventArgs^) {
+            dgvDatos->EndEdit();   // confirma la celda en edicion antes de leerla
             if (vistaActual == Vista::Eventos) {
                 gestor->limpiarEventos();
                 for each (DataGridViewRow ^ r in dgvDatos->Rows) {
@@ -348,6 +362,7 @@ namespace SalesForceV3 {
                         Str::N(Str::Celda(r->Cells[2])), Str::N(Str::Celda(r->Cells[3])));
                     gestor->insertarEvento(e);
                 }
+                gestor->guardarEventos();
                 MessageBox::Show("Eventos guardados.", "OK", MessageBoxButtons::OK, MessageBoxIcon::Information);
             }
             CambiarVista(vistaActual, btnNavActivo != nullptr ? btnNavActivo : btnNavCasos);
