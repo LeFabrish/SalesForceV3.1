@@ -125,6 +125,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Campoformulario.cpp" />
+    <ClCompile Include="Frmagregargenerico.cpp" />
     <ClCompile Include="FrmClientes.cpp" />
     <ClCompile Include="FrmPrincipalh.cpp" />
     <ClCompile Include="FrmSoporte.cpp" />
@@ -139,6 +141,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Campoformulario.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Caso.h" />
     <ClInclude Include="Cliente_Potencial.h" />
     <ClInclude Include="Cola.h" />
@@ -149,6 +154,9 @@
     <ClInclude Include="DataSetGenerator.h" />
     <ClInclude Include="Direccion.h" />
     <ClInclude Include="Evento.h" />
+    <ClInclude Include="Frmagregargenerico.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="FrmClientes.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -183,6 +191,9 @@
     <ClInclude Include="UsuarioCRM.h" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Frmagregargenerico.resx">
+      <DependentUpon>Frmagregargenerico.h</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmPrincipalh.resx">
       <DependentUpon>FrmPrincipalh.h</DependentUpon>
     </EmbeddedResource>

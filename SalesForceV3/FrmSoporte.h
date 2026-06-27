@@ -5,8 +5,10 @@
 #pragma managed(pop)
 
 #include "MashallHelper.h"
+#include "Frmagregargenerico.h";
 
 namespace SalesForceV3 {
+    using namespace System::Collections::Generic;
     using namespace System;
     using namespace System::Windows::Forms;
     using namespace System::Drawing;
@@ -288,33 +290,14 @@ namespace SalesForceV3 {
         // ═══════════════════════════════════════════════════════════
         //  EVENTOS
         // ═══════════════════════════════════════════════════════════
-        
+       
         void accion1_Click(Object^, EventArgs^) {
             switch (vistaActual) {
-            case Vista::Casos:
-                gestor->encolarCaso({ 0, "Nuevo caso", "Abierto", "Media" });
-                gestor->guardarCasos();   // Casos/Soluciones/Tareas/Historial no tienen
-                ConfigurarCasos(); break; // boton "Guardar": se persiste al instante.
-            case Vista::Soluciones:
-                gestor->apilarSolucion({ 0, 0, "Nueva solucion", "01/01/2025" });
-                gestor->guardarSoluciones();
-                ConfigurarSoluciones(); break;
-            case Vista::Tareas:
-                gestor->encolarTarea({ 0, "Nueva tarea", "Pendiente", "30/12/2025" });
-                gestor->guardarTareas();
-                ConfigurarTareas(); break;
-            case Vista::Eventos: {
-                // Llaves nuevas alrededor de este case: se declara una variable local
-                // (indiceNuevo) y en un switch eso exige un bloque propio.
-                int indiceNuevo = dgvDatos->Rows->Add();
-                dgvDatos->Rows[indiceNuevo]->Cells[0]->Value = SiguienteId();
-                dgvDatos->CurrentCell = dgvDatos->Rows[indiceNuevo]->Cells[1];
-                break;
-            }
-            case Vista::Historial:
-                gestor->apilarHistorial({ 0, "Sistema", "Accion manual", "01/01/2025" });
-                gestor->guardarHistorial();
-                ConfigurarHistorial(); break;
+            case Vista::Casos:      AgregarCaso();      break;
+            case Vista::Soluciones: AgregarSolucion();  break;
+            case Vista::Tareas:     AgregarTarea();     break;
+            case Vista::Eventos:    AgregarEvento();    break;
+            case Vista::Historial:  AgregarHistorial(); break;
             }
         }
 
@@ -367,6 +350,98 @@ namespace SalesForceV3 {
             }
             CambiarVista(vistaActual, btnNavActivo != nullptr ? btnNavActivo : btnNavCasos);
         }
+
+        // ====== Metodos Privados ======
+        // ─── Alta de Caso (Cola FIFO) ───────────────────────────────────
+        void AgregarCaso() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Asunto", "asunto", true));
+            campos->Add(CampoFormulario::Combo("Estado", "estado", gcnew cli::array<String^>{"Abierto", "Cerrado"}));
+            campos->Add(CampoFormulario::Combo("Prioridad", "prioridad", gcnew cli::array<String^>{"Alta", "Media", "Baja"}));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Caso", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            gestor->encolarCaso({ 0, Str::N(dlg->Texto("asunto")), Str::N(dlg->Texto("estado")), Str::N(dlg->Texto("prioridad")) });
+            gestor->guardarCasos(); // Casos/Soluciones/Tareas/Historial no tienen boton "Guardar": se persiste al instante.
+            ConfigurarCasos();
+        }
+
+        // ─── Alta de Solucion (Pila LIFO) ───────────────────────────────
+        void AgregarSolucion() {
+            List<String^>^ idsCasos = gcnew List<String^>();
+            NodoS<Caso>* n = gestor->getColaCasos()->getFrenteNodo();
+            while (n) { idsCasos->Add(n->dato.getId() + " - " + Str::M(n->dato.getAsunto())); n = n->siguiente; }
+            if (idsCasos->Count == 0) {
+                MessageBox::Show("No hay Casos registrados para asociar una Solucion.",
+                    "Sin casos disponibles", MessageBoxButtons::OK, MessageBoxIcon::Information);
+                return;
+            }
+
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::ComboDinamico("Caso Asociado", "caso", idsCasos));
+            campos->Add(CampoFormulario::Texto("Descripcion", "descripcion", false));
+            campos->Add(CampoFormulario::Fecha("Fecha de Resolucion", "fecha"));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nueva Solucion", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            gestor->apilarSolucion({ 0, dlg->IdSeleccionado("caso"), Str::N(dlg->Texto("descripcion")),
+                Str::N(dlg->FechaFormateada("fecha", "dd/MM/yyyy")) });
+            gestor->guardarSoluciones();
+            ConfigurarSoluciones();
+        }
+
+        // ─── Alta de Tarea (Cola FIFO) ───────────────────────────────────
+        void AgregarTarea() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Descripcion", "descripcion", false));
+            campos->Add(CampoFormulario::Combo("Estado", "estado", gcnew cli::array<String^>{"Pendiente", "Completada"}));
+            campos->Add(CampoFormulario::Fecha("Fecha Limite", "fecha"));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nueva Tarea", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            gestor->encolarTarea({ 0, Str::N(dlg->Texto("descripcion")), Str::N(dlg->Texto("estado")),
+                Str::N(dlg->FechaFormateada("fecha", "dd/MM/yyyy")) });
+            gestor->guardarTareas();
+            ConfigurarTareas();
+        }
+
+        // ─── Alta de Evento ──────────────────────────────────────────────
+        void AgregarEvento() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Titulo", "titulo", true));
+            campos->Add(CampoFormulario::Fecha("Fecha", "fecha"));
+            campos->Add(CampoFormulario::Texto("Hora (HH:MM)", "hora", true, nullptr, "09:00"));
+            campos->Add(CampoFormulario::Texto("Ubicacion", "ubicacion", true));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Evento", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            String^ fechaHora = dlg->FechaFormateada("fecha", "dd/MM") + " " + dlg->Texto("hora");
+            Evento e(gestor->getProximoIdEvento(), Str::N(dlg->Texto("titulo")), Str::N(fechaHora), Str::N(dlg->Texto("ubicacion")));
+            gestor->insertarEvento(e);
+            gestor->guardarEventos();
+            ConfigurarEventos();
+        }
+
+        // ─── Alta de Historial (Pila LIFO) ───────────────────────────────
+        void AgregarHistorial() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Combo("Modulo Asociado", "modulo", gcnew cli::array<String^>{"Clientes", "Ventas", "Soporte"}));
+            campos->Add(CampoFormulario::Texto("Accion Realizada", "accion", true));
+            campos->Add(CampoFormulario::Fecha("Fecha", "fecha"));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Registro de Historial", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            gestor->apilarHistorial({ 0, Str::N(dlg->Texto("modulo")), Str::N(dlg->Texto("accion")),
+                Str::N(dlg->FechaFormateada("fecha", "dd/MM/yyyy")) });
+            gestor->guardarHistorial();
+            ConfigurarHistorial();
+        }
+
 
         // ─── Navegación ───────────────────────────────────────────
         void navCasos_Click(Object^, EventArgs^) { btnNavActivo = btnNavCasos;      CambiarVista(Vista::Casos, btnNavCasos); }
