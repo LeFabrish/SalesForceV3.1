@@ -1,0 +1,4 @@
+1, "Llamar a contacto BCP",            "Pendiente",  "15/06/2025"
+2, "Preparar propuesta Alicorp",       "Pendiente",  "20/06/2025"
+3, "Demo para equipo Claro",           "Completada", "01/06/2025"
+4, "Enviar cotizacion Falabella",      "Pendiente",  "25/06/2025"

@@ -43,6 +43,12 @@
     <ClCompile Include="FrmSoporte.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="Campoformulario.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Frmagregargenerico.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrmPrincipalh.h">
@@ -147,6 +153,12 @@
     <ClInclude Include="Contrato.h">
       <Filter>Model\Ventas</Filter>
     </ClInclude>
+    <ClInclude Include="Campoformulario.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Frmagregargenerico.h">
+      <Filter>Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="casos.txt">
@@ -161,5 +173,12 @@
     <Text Include="usuarios.txt">
       <Filter>Resource</Filter>
     </Text>
+    <Text Include="tareas.txt" />
+    <Text Include="eventos.txt" />
+    <Text Include="historial.txt" />
+    <Text Include="clientesPotenciales.txt" />
+    <Text Include="oportunidades.txt" />
+    <Text Include="cotizaciones.txt" />
+    <Text Include="contratos.txt" />
   </ItemGroup>
 </Project>

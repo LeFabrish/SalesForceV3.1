@@ -200,8 +200,15 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="casos.txt" />
+    <Text Include="clientesPotenciales.txt" />
+    <Text Include="contratos.txt" />
+    <Text Include="cotizaciones.txt" />
     <Text Include="cuentas.txt" />
+    <Text Include="eventos.txt" />
+    <Text Include="historial.txt" />
+    <Text Include="oportunidades.txt" />
     <Text Include="productos.txt" />
+    <Text Include="tareas.txt" />
     <Text Include="usuarios.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
