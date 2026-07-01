@@ -1,3 +1,4 @@
+  SalesForceV3.Frmagregargenerico.resources - Embedded, ContainedInManifestFile, 
   SalesForceV3.FrmPrincipalh.resources - Embedded, ContainedInManifestFile, 
 ImageRuntimeVersion: v4.0.30319
 Assembly SalesForceV3, Version=0.0.*, Culture=Todos los idiomas (todos los países): 
@@ -14,6 +15,41 @@ Assembly System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=
 	hash=None, flags=None
 Assembly System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
 	hash=None, flags=None
+Class SalesForceV3.CampoFormulario: AutoLayout, AnsiClass, Class, Public, Sealed, BeforeFieldInit
+    Void .ctor(System.String, System.String, SalesForceV3.TipoCampo, Boolean, System.String, System.String): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    System.String Etiqueta : Public
+    System.String Clave : Public
+    SalesForceV3.TipoCampo Tipo : Public
+    Boolean Obligatorio : Public
+    Boolean Numerico : Public
+    System.String Grupo : Public
+    System.String ValorPorDefecto : Public
+    System.Collections.Generic.List`1[System.String] Opciones : Public
+  Methods:
+    Texto(String, String, Boolean(HasFieldMarshal)): PrivateScope, Public, Static, HideBySig
+    Texto(String, String, Boolean(HasFieldMarshal), String, String): PrivateScope, Public, Static, HideBySig
+    Numero(String, String): PrivateScope, Public, Static, HideBySig
+    Combo(String, String, String[]): PrivateScope, Public, Static, HideBySig
+    Combo(String, String, String[], String): PrivateScope, Public, Static, HideBySig
+    ComboDinamico(String, String, List`1): PrivateScope, Public, Static, HideBySig
+    Fecha(String, String): PrivateScope, Public, Static, HideBySig
+Struct SalesForceV3.TipoCampo: AutoLayout, AnsiClass, Class, Public, Sealed, BeforeFieldInit
+  :System.Enum
+  Fields:
+    Int32 value__ : Public, SpecialName, RTSpecialName
+    SalesForceV3.TipoCampo Texto = 0 : Public, Static, Literal, HasDefault
+    SalesForceV3.TipoCampo ComboFijo = 1 : Public, Static, Literal, HasDefault
+    SalesForceV3.TipoCampo ComboDinamico = 2 : Public, Static, Literal, HasDefault
+    SalesForceV3.TipoCampo Fecha = 3 : Public, Static, Literal, HasDefault
+Class SalesForceV3.FrmAgregarGenerico: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(System.String, System.Collections.Generic.List`1[SalesForceV3.CampoFormulario]): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Methods:
+    Texto(String): PrivateScope, Public, HideBySig
+    IdSeleccionado(String): PrivateScope, Public, HideBySig
+    FechaFormateada(String, String): PrivateScope, Public, HideBySig
+    Numero(String): PrivateScope, Public, HideBySig
 Class SalesForceV3.FrmClientes: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(GestorCliente*): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName

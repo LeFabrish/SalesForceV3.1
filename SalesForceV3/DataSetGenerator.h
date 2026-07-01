@@ -30,6 +30,8 @@ private:
         gc->insertarUsuario({ 1, "Administrador", "Sistema",   "Admin",    "admin",     "admin123" });
         gc->insertarUsuario({ 2, "Vendedor",       "Principal", "Vendedor", "vendedor1", "pass123" });
         gc->insertarUsuario({ 3, "Soporte",        "Tecnico",   "Soporte",  "soporte1",  "pass456" });
+        gc->insertarUsuario({ 4, "Patricia",       "Mendoza",   "Vendedor", "pmendoza",  "pass789" });
+        gc->insertarUsuario({ 5, "Jorge",          "Salinas",   "Soporte",  "jsalinas",  "pass321" });
 
         gc->insertarInteraccion({ 1, "Llamada",  "Presentacion del CRM",     "01/06/2025", 1, 2 });
         gc->insertarInteraccion({ 2, "Email",    "Cotizacion enviada",       "03/06/2025", 2, 2 });
@@ -64,9 +66,13 @@ private:
         gv->insertarCotizacion({ 1,  7500.0, "30/06/2025", "Pendiente" });
         gv->insertarCotizacion({ 2, 15000.0, "15/07/2025", "Aceptada" });
         gv->insertarCotizacion({ 3,  3200.0, "20/06/2025", "Rechazada" });
+        gv->insertarCotizacion({ 4,  9800.0, "05/08/2025", "Pendiente" });
+        gv->insertarCotizacion({ 5, 22000.0, "12/07/2025", "Aceptada" });
 
         gv->insertarContrato({ 1, "01/04/2025", "Contrato anual CRM Enterprise",    60000.0 });
         gv->insertarContrato({ 2, "15/03/2025", "Soporte y mantenimiento 12 meses",  9600.0 });
+        gv->insertarContrato({ 3, "10/05/2025", "Licencia Analytics Plus 24 meses", 18000.0 });
+        gv->insertarContrato({ 4, "22/02/2025", "Implementacion API + capacitacion",12500.0 });
 
         gv->generarDataSet();
     }
@@ -80,6 +86,8 @@ private:
 
         gs->apilarSolucion({ 1, 1, "Parche de actualizacion v2.1 aplicado",      "05/04/2025" });
         gs->apilarSolucion({ 2, 2, "Reconfiguracion de endpoints API",           "10/04/2025" });
+        gs->apilarSolucion({ 3, 4, "Documentacion de API entregada al cliente",  "12/04/2025" });
+        gs->apilarSolucion({ 4, 5, "Optimizacion de consultas en reportes",      "18/04/2025" });
 
         gs->encolarTarea({ 1, "Llamar a contacto BCP",            "Pendiente",  "15/06/2025" });
         gs->encolarTarea({ 2, "Preparar propuesta Alicorp",       "Pendiente",  "20/06/2025" });

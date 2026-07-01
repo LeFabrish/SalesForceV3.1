@@ -6,46 +6,41 @@
 #include "NodoS.h"
 
 using namespace std;
-
 // Función hash especializable por tipo de clave.
-// Implementación por defecto: trata la clave como secuencia de bytes (FNV-1a).
 template <typename TKey>
 struct FuncionHash {
+    // Caso genérico (sin especialización propia): suma los bytes crudos de la clave.
+    // Las claves reales que usa el proyecto (string, int) tienen su propia versión
+    // más cuidada abajo.
     static unsigned int calcular(const TKey& clave, int capacidad) {
-        unsigned int h = 2166136261u;
+        unsigned int h = 0;
         const unsigned char* bytes = reinterpret_cast<const unsigned char*>(&clave);
         for (size_t i = 0; i < sizeof(TKey); i++) {
-            h ^= bytes[i];
-            h *= 16777619u;
+            h += bytes[i];
         }
-        // Compresión Fibonacci: distribuye uniformemente en [0, capacidad)
-        return (h * 2654435761u) % static_cast<unsigned int>(capacidad);
+        return h % static_cast<unsigned int>(capacidad);
     }
 };
 
-// Especialización para string: FNV-1a byte a byte + compresión Fibonacci
-// FNV-1a garantiza avalancha completa (1 bit distinto → ~50% bits distintos en output)
+
 template <>
 struct FuncionHash<string> {
     static unsigned int calcular(const string& clave, int capacidad) {
-        unsigned int h = 2166136261u;       // FNV offset basis
+        unsigned int h = 0;
+        const unsigned int primo = 31u;
         for (unsigned char c : clave) {
-            h ^= c;
-            h *= 16777619u;                 // FNV prime (32-bit)
+            h = h * primo + c;
         }
-        return (h * 2654435761u) % static_cast<unsigned int>(capacidad);
+        return h % static_cast<unsigned int>(capacidad);
     }
 };
 
-// Especialización para int: mezcla de bits de Murmur3
+// Especialización para int: el valor, reinterpretado como sin signo (para que el
+// módulo nunca sea negativo), reducido al rango de la tabla.
 template <>
 struct FuncionHash<int> {
     static unsigned int calcular(int clave, int capacidad) {
-        unsigned int h = static_cast<unsigned int>(clave);
-        h ^= h >> 16;  h *= 0x45d9f3bu;
-        h ^= h >> 16;  h *= 0x45d9f3bu;
-        h ^= h >> 16;
-        return h % static_cast<unsigned int>(capacidad);
+        return static_cast<unsigned int>(clave) % static_cast<unsigned int>(capacidad);
     }
 };
 

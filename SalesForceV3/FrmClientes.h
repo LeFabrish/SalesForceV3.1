@@ -5,8 +5,10 @@
 #pragma managed(pop)
 
 #include "MashallHelper.h"
+#include "Frmagregargenerico.h"
 
 namespace SalesForceV3 {
+    using namespace System::Collections::Generic;
     using namespace System;
     using namespace System::Windows::Forms;
     using namespace System::Drawing;
@@ -59,8 +61,8 @@ namespace SalesForceV3 {
         void CrearUI() {
             this->Text = "Gestion de Clientes";
             this->BackColor = EstiloCRM::GrisClaro();
-            CrearMiniSidebar();
             CrearAreaContenido();
+            CrearMiniSidebar();
         }
 
         void CrearMiniSidebar() {
@@ -335,7 +337,7 @@ namespace SalesForceV3 {
         void ActualizarEstadisticasHash() {
             // No acceder directamente a miembros privados de GestorCliente (hashCuentas)
             lblHashStats->Text =
-                "Estadisticas de la Hash Table (encadenamiento separado  |  hash FNV-1a + Fibonacci):\r\n"
+                "Estadisticas de la Hash Table (encadenamiento separado  |  hash polinomial propio h=h*31+caracter):\r\n"
                 "  Elementos: " + gestor->getHashTamanio() + "\r\n"
                 "  Capacidad: " + gestor->getHashCapacidad() + " buckets\r\n"
                 "  Factor de carga: " + (gestor->getHashFactorCarga() * 100).ToString("F1") + " %\r\n"
@@ -356,12 +358,15 @@ namespace SalesForceV3 {
         //  EVENTOS — BOTONES ACCIÓN
         // ═══════════════════════════════════════════════════════════
         void accion1_Click(Object^, EventArgs^) {
-            // Agregar fila vacía con ID auto-asignado
-            dgvDatos->Rows->Add(SiguienteId());
-            dgvDatos->CurrentCell = dgvDatos->Rows[dgvDatos->Rows->Count - 1]->Cells[1];
+            switch (vistaActual) {
+            case Vista::Cuentas:       AgregarCuenta();      break;
+            case Vista::Contactos:     AgregarContacto();    break;
+            case Vista::Usuarios:      AgregarUsuario();     break;
+            case Vista::Interacciones: AgregarInteraccion(); break;
+            }
         }
-
         void accion2_Click(Object^, EventArgs^) {
+            dgvDatos->EndEdit();
             if (dgvDatos->SelectedRows->Count == 0) return;
             if (MessageBox::Show("¿Eliminar la fila seleccionada?", "Confirmar",
                 MessageBoxButtons::YesNo, MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::Yes)
@@ -369,6 +374,12 @@ namespace SalesForceV3 {
         }
 
         void accion3_Click(Object^, EventArgs^) {
+            // EndEdit() confirma el valor que el usuario esta escribiendo en la celda
+            // activa. Sin esto, si se hace clic en "Guardar" justo despues de teclear
+            // (sin Tab/Enter), esa ultima celda no se copio aun a Cells[i]->Value y el
+            // dato se pierde o se lee como vacio/0 (la causa mas probable del "se
+            // guarda con indice 0" reportado).
+            dgvDatos->EndEdit();
             GuardarVistaActual();
             MessageBox::Show("Datos guardados correctamente.", "OK",
                 MessageBoxButtons::OK, MessageBoxIcon::Information);
@@ -400,13 +411,27 @@ namespace SalesForceV3 {
 
         void GuardarContactos() {
             gestor->limpiarContactos();
+            bool hayContactoSinCuenta = false;
             for each (DataGridViewRow ^ r in dgvDatos->Rows) {
                 if (r->IsNewRow || Str::Celda(r->Cells[1]) == "") continue;
+                int idCuenta = Str::CeldaInt(r->Cells[6]);
+                // "ID Cuenta" en blanco se lee como 0 (ver Str::CeldaInt). Se guarda el
+                // contacto igual, para no perder lo que el usuario escribio, pero se
+                // avisa para que no quede vinculado a una cuenta inexistente sin darse
+                // cuenta — esto es lo que se percibia como "se guarda con indice 0".
+                if (idCuenta == 0) hayContactoSinCuenta = true;
                 Contacto c(Str::CeldaInt(r->Cells[0]), Str::N(Str::Celda(r->Cells[1])),
                     Str::N(Str::Celda(r->Cells[2])), Str::N(Str::Celda(r->Cells[3])),
                     Str::N(Str::Celda(r->Cells[4])), Str::N(Str::Celda(r->Cells[5])),
-                    Str::CeldaInt(r->Cells[6]), Direccion("", "", "", ""));
+                    idCuenta, Direccion("", "", "", ""));
                 gestor->insertarContacto(c);
+            }
+            gestor->guardarContactos();
+            if (hayContactoSinCuenta) {
+                MessageBox::Show(
+                    "Uno o mas contactos se guardaron sin una 'ID Cuenta' valida (quedo en 0).\n"
+                    "Revisa esa columna si el contacto debe estar vinculado a una cuenta.",
+                    "Aviso", MessageBoxButtons::OK, MessageBoxIcon::Warning);
             }
         }
 
@@ -419,6 +444,7 @@ namespace SalesForceV3 {
                     Str::N(Str::Celda(r->Cells[4])), Str::N(Str::Celda(r->Cells[5])));
                 gestor->insertarUsuario(u);
             }
+            gestor->guardarUsuarios();
         }
 
         void GuardarInteracciones() {
@@ -430,9 +456,10 @@ namespace SalesForceV3 {
                     Str::CeldaInt(r->Cells[4]), Str::CeldaInt(r->Cells[5]));
                 gestor->insertarInteraccion(i);
             }
+            gestor->guardarInteracciones();
         }
 
-        // ─── HashTable ────────────────────────────────────────────
+        //====== HashTable ======
         void buscarHash_Click(Object^, EventArgs^) {
             std::string nombre = Str::N(txtBusqueda->Text->Trim());
             Cuenta* res = gestor->buscarCuentaHash(nombre);
@@ -451,11 +478,131 @@ namespace SalesForceV3 {
             ActualizarEstadisticasHash();
         }
 
-        // ─── Navegación mini-sidebar ──────────────────────────────
+        // ====== METODOS PRIVADOS =======
+        // ─── Alta de Cuenta ─────────────────────────────────────────────
+        void AgregarCuenta() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Nombre", "nombre", true));
+            campos->Add(CampoFormulario::Texto("Industria", "industria", true));
+            campos->Add(CampoFormulario::Texto("Telefono", "telefono", true));
+            campos->Add(CampoFormulario::Texto("Email", "email", true));
+            campos->Add(CampoFormulario::Texto("Pais", "pais", true, "Direccion", nullptr));
+            campos->Add(CampoFormulario::Texto("Ciudad", "ciudad", true, "Direccion", nullptr));
+            campos->Add(CampoFormulario::Texto("Distrito", "distrito", true, "Direccion", nullptr));
+            campos->Add(CampoFormulario::Texto("Calle", "calle", true, "Direccion", nullptr));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nueva Cuenta", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Cuenta c(gestor->getProximoIdCuenta(), Str::N(dlg->Texto("nombre")), Str::N(dlg->Texto("industria")),
+                Str::N(dlg->Texto("telefono")), Str::N(dlg->Texto("email")),
+                Direccion(Str::N(dlg->Texto("pais")), Str::N(dlg->Texto("ciudad")),
+                    Str::N(dlg->Texto("distrito")), Str::N(dlg->Texto("calle"))));
+            gestor->insertarCuenta(c);
+            gestor->guardarCuentas();
+            ConfigurarCuentas();
+        }
+
+        // ─── Alta de Contacto ───────────────────────────────────────────
+        void AgregarContacto() {
+            List<String^>^ idsCuentas = gcnew List<String^>();
+            NodoD<Cuenta>* nc = gestor->getCuentas()->getCabeza();
+            while (nc) { idsCuentas->Add(nc->dato.getId() + " - " + Str::M(nc->dato.getNombre())); nc = nc->siguiente; }
+            if (idsCuentas->Count == 0) {
+                MessageBox::Show("Primero debes registrar una Cuenta antes de agregar un Contacto.",
+                    "Sin cuentas disponibles", MessageBoxButtons::OK, MessageBoxIcon::Information);
+                return;
+            }
+
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Nombre", "nombre", true));
+            campos->Add(CampoFormulario::Texto("Apellido", "apellido", true));
+            campos->Add(CampoFormulario::Texto("Cargo", "cargo", true));
+            campos->Add(CampoFormulario::Texto("Telefono", "telefono", true));
+            campos->Add(CampoFormulario::Texto("Email", "email", true));
+            campos->Add(CampoFormulario::ComboDinamico("Cuenta", "cuenta", idsCuentas));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Contacto", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Contacto c(gestor->getProximoIdContacto(), Str::N(dlg->Texto("nombre")), Str::N(dlg->Texto("apellido")),
+                Str::N(dlg->Texto("cargo")), Str::N(dlg->Texto("telefono")), Str::N(dlg->Texto("email")),
+                dlg->IdSeleccionado("cuenta"), Direccion("", "", "", ""));
+            gestor->insertarContacto(c);
+            gestor->guardarContactos();
+            ConfigurarContactos();
+        }
+
+        // ─── Alta de Usuario ────────────────────────────────────────────
+        void AgregarUsuario() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Nombre", "nombre", true));
+            campos->Add(CampoFormulario::Texto("Apellido", "apellido", true));
+            campos->Add(CampoFormulario::Combo("Rol", "rol", gcnew cli::array<String^>{"Admin", "Vendedor", "Soporte"}));
+            campos->Add(CampoFormulario::Texto("Username", "username", true));
+            campos->Add(CampoFormulario::Texto("Password", "password", true));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Usuario CRM", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            UsuarioCRM u(gestor->getProximoIdUsuario(), Str::N(dlg->Texto("nombre")), Str::N(dlg->Texto("apellido")),
+                Str::N(dlg->Texto("rol")), Str::N(dlg->Texto("username")), Str::N(dlg->Texto("password")));
+            gestor->insertarUsuario(u);
+            gestor->guardarUsuarios();
+            ConfigurarUsuarios();
+        }
+
+        // ─── Alta de Interaccion ────────────────────────────────────────
+        void AgregarInteraccion() {
+            List<String^>^ idsContactos = gcnew List<String^>();
+            NodoD<Contacto>* ncon = gestor->getContactos()->getCabeza();
+            while (ncon) {
+                idsContactos->Add(ncon->dato.getId() + " - " + Str::M(ncon->dato.getNombre()) + " " + Str::M(ncon->dato.getApellido()));
+                ncon = ncon->siguiente;
+            }
+            List<String^>^ idsUsuarios = gcnew List<String^>();
+            NodoD<UsuarioCRM>* nu = gestor->getUsuarios()->getCabeza();
+            while (nu) {
+                idsUsuarios->Add(nu->dato.getId() + " - " + Str::M(nu->dato.getNombre()) + " " + Str::M(nu->dato.getApellido()));
+                nu = nu->siguiente;
+            }
+            if (idsContactos->Count == 0 || idsUsuarios->Count == 0) {
+                MessageBox::Show("Se necesita al menos un Contacto y un Usuario CRM antes de registrar una Interaccion.",
+                    "Datos insuficientes", MessageBoxButtons::OK, MessageBoxIcon::Information);
+                return;
+            }
+
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Combo("Tipo", "tipo", gcnew cli::array<String^>{"Llamada", "Email", "Reunion"}));
+            campos->Add(CampoFormulario::Texto("Descripcion", "descripcion", false));
+            campos->Add(CampoFormulario::Fecha("Fecha", "fecha"));
+            campos->Add(CampoFormulario::ComboDinamico("Contacto", "contacto", idsContactos));
+            campos->Add(CampoFormulario::ComboDinamico("Usuario", "usuario", idsUsuarios));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nueva Interaccion", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Interaccion i(gestor->getProximoIdInteraccion(), Str::N(dlg->Texto("tipo")), Str::N(dlg->Texto("descripcion")),
+                Str::N(dlg->FechaFormateada("fecha", "dd/MM/yyyy")), dlg->IdSeleccionado("contacto"), dlg->IdSeleccionado("usuario"));
+            gestor->insertarInteraccion(i);
+            gestor->guardarInteracciones();
+            ConfigurarInteracciones();
+        }
+
+        // ====== Navegación mini-sidebar ======
         void navCuentas_Click(Object^, EventArgs^) { btnNavActivo = btnNavCuentas;       CambiarVista(Vista::Cuentas, btnNavCuentas); }
         void navContactos_Click(Object^, EventArgs^) { btnNavActivo = btnNavContactos;     CambiarVista(Vista::Contactos, btnNavContactos); }
         void navUsuarios_Click(Object^, EventArgs^) { btnNavActivo = btnNavUsuarios;      CambiarVista(Vista::Usuarios, btnNavUsuarios); }
         void navInteracciones_Click(Object^, EventArgs^) { btnNavActivo = btnNavInteracciones; CambiarVista(Vista::Interacciones, btnNavInteracciones); }
         void navHash_Click(Object^, EventArgs^) { btnNavActivo = btnNavHash;          CambiarVista(Vista::HashBusqueda, btnNavHash); }
-    };
+    private: System::Void InitializeComponent() {
+        this->SuspendLayout();
+        // 
+        // FrmClientes
+        // 
+        this->ClientSize = System::Drawing::Size(284, 261);
+        this->Name = L"FrmClientes";
+        this->ResumeLayout(false);
+    }
+};
 }

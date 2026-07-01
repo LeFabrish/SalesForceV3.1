@@ -1,5 +1,3 @@
-1,Error en modulo de pagos,Abierto,Alta
-2,Integracion con ERP fallida,En Proceso,Media
 3,Dashboard no carga datos,Cerrado,Baja
 4,Solicitud nueva funcionalidad,Abierto,Media
 5,Problemas de rendimiento en reportes,En Proceso,Alta

@@ -37,11 +37,42 @@ public:
     void encolarCliente(Cliente_Potencial c) {
         if (c.getId() == 0) c.setId(contCliente++);
         colaClientes.enqueue(c);
+        if (c.getId() >= contCliente) contCliente = c.getId() + 1;
     }
 
     void atenderCliente() { if (!colaClientes.estaVacia()) colaClientes.dequeue(); }
     Cola<Cliente_Potencial>* getColaClientes() { return &colaClientes; }
     int getProximoIdCliente() { return contCliente; }
+
+    // ==== GUARDADO ====
+    void guardarClientes() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoS<Cliente_Potencial>* n = colaClientes.getFrenteNodo();
+        while (n) {
+            Cliente_Potencial& c = n->dato;
+            ostringstream ss;
+            ss << c.getId() << "," << c.getNombre() << "," << c.getCorreo() << "," << c.getInteres();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("clientesPotenciales.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarClientes() {
+        colaClientes.limpiar();
+        ListaSimple<string>* lineas = gestor.cargarLineas("clientesPotenciales.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Cliente_Potencial c(stoi(GestorArchivos::campo(l, 0)),
+                GestorArchivos::campo(l, 1), GestorArchivos::campo(l, 2),
+                GestorArchivos::campo(l, 3));
+            encolarCliente(c);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
 
     // ─── OPORTUNIDADES ────────────────────────────────────────────
     void insertarOportunidad(Oportunidad o) {
@@ -50,6 +81,36 @@ public:
     }
 
     void limpiarOportunidades() { oportunidades.limpiar(); contOportunidad = 1; }
+
+    void guardarOportunidades() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoD<Oportunidad>* n = oportunidades.getCabeza();
+        while (n) {
+            Oportunidad& o = n->dato;
+            ostringstream ss;
+            ss << o.getId() << "," << o.getTitulo() << "," << fixed << setprecision(2)
+                << o.getValorEsperado() << "," << o.getFase();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("oportunidades.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarOportunidades() {
+        limpiarOportunidades();
+        ListaSimple<string>* lineas = gestor.cargarLineas("oportunidades.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Oportunidad o(stoi(GestorArchivos::campo(l, 0)),
+                GestorArchivos::campo(l, 1), stod(GestorArchivos::campo(l, 2)),
+                GestorArchivos::campo(l, 3));
+            insertarOportunidad(o);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
 
     // Recursión: suma total del pipeline de ventas
     double sumarOportunidadesRec(NodoD<Oportunidad>* nodo) {
@@ -143,6 +204,37 @@ public:
         if (c.getId() >= contCotizacion) contCotizacion = c.getId() + 1;
     }
     void limpiarCotizaciones() { cotizaciones.limpiar(); contCotizacion = 1; }
+
+    void guardarCotizaciones() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoS<Cotizacion>* n = cotizaciones.getCabeza();
+        while (n) {
+            Cotizacion& c = n->dato;
+            ostringstream ss;
+            ss << c.getId() << "," << fixed << setprecision(2) << c.getTotal() << ","
+                << c.getFechaVencimiento() << "," << c.getEstado();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("cotizaciones.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarCotizaciones() {
+        limpiarCotizaciones();
+        ListaSimple<string>* lineas = gestor.cargarLineas("cotizaciones.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Cotizacion c(stoi(GestorArchivos::campo(l, 0)),
+                stod(GestorArchivos::campo(l, 1)), GestorArchivos::campo(l, 2),
+                GestorArchivos::campo(l, 3));
+            insertarCotizacion(c);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
+
     ListaSimple<Cotizacion>* getCotizaciones() { return &cotizaciones; }
     int getProximoIdCotizacion() { return contCotizacion; }
 
@@ -152,6 +244,36 @@ public:
         if (c.getId() >= contContrato) contContrato = c.getId() + 1;
     }
     void limpiarContratos() { contratos.limpiar(); contContrato = 1; }
+
+    void guardarContratos() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoS<Contrato>* n = contratos.getCabeza();
+        while (n) {
+            Contrato& c = n->dato;
+            ostringstream ss;
+            ss << c.getId() << "," << c.getFechaFirma() << "," << c.getTerminos() << ","
+                << fixed << setprecision(2) << c.getMontoTotal();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("contratos.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarContratos() {
+        limpiarContratos();
+        ListaSimple<string>* lineas = gestor.cargarLineas("contratos.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Contrato c(stoi(GestorArchivos::campo(l, 0)), GestorArchivos::campo(l, 1),
+                GestorArchivos::campo(l, 2), stod(GestorArchivos::campo(l, 3)));
+            insertarContrato(c);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
+
     ListaSimple<Contrato>* getContratos() { return &contratos; }
     int getProximoIdContrato() { return contContrato; }
 
@@ -189,6 +311,21 @@ public:
         auto comp = [](const double& a, const double& b) { return a < b; };
         Ordenador<double>::heapSort(v, comp);
         return v;
+    }
+    void guardarTodo() const {
+        guardarClientes();
+        guardarOportunidades();
+        guardarProductos();
+        guardarCotizaciones();
+        guardarContratos();
+    }
+
+    void cargarTodo() {
+        cargarClientes();
+        cargarOportunidades();
+        cargarProductos();
+        cargarCotizaciones();
+        cargarContratos();
     }
 };
 

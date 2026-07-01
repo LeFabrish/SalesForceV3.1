@@ -5,8 +5,10 @@
 #pragma managed(pop)
 
 #include "MashallHelper.h"
+#include "Frmagregargenerico.h"
 
 namespace SalesForceV3 {
+    using namespace System::Collections::Generic;
     using namespace System;
     using namespace System::Windows::Forms;
     using namespace System::Drawing;
@@ -49,8 +51,8 @@ namespace SalesForceV3 {
         void CrearUI() {
             this->Text = "Embudo de Ventas";
             this->BackColor = EstiloCRM::GrisClaro();
-            CrearMiniSidebar();
             CrearAreaContenido();
+            CrearMiniSidebar();
         }
 
         void CrearMiniSidebar() {
@@ -348,21 +350,21 @@ namespace SalesForceV3 {
         // ═══════════════════════════════════════════════════════════
         //  EVENTOS
         // ═══════════════════════════════════════════════════════════
+        // AHORA
         void accion1_Click(Object^, EventArgs^) {
-            if (vistaActual == Vista::Clientes) {
-                Cliente_Potencial c(gestor->getProximoIdCliente(), "Nuevo", "correo@ejemplo.pe", "Servicio");
-                gestor->encolarCliente(c);
-                ConfigurarClientes();
-            }
-            else {
-                dgvDatos->Rows->Add(SiguienteId());
-                dgvDatos->CurrentCell = dgvDatos->Rows[dgvDatos->Rows->Count - 1]->Cells[1];
+            switch (vistaActual) {
+            case Vista::Clientes:      AgregarClientePotencial(); break;
+            case Vista::Oportunidades: AgregarOportunidad();      break;
+            case Vista::Productos:     AgregarProducto();         break;
+            case Vista::Cotizaciones:  AgregarCotizacion();       break;
+            case Vista::Contratos:     AgregarContrato();         break;
             }
         }
-
         void accion2_Click(Object^, EventArgs^) {
+            dgvDatos->EndEdit();
             if (vistaActual == Vista::Clientes) {
                 gestor->atenderCliente();
+                gestor->guardarClientes();
                 ConfigurarClientes();
                 return;
             }
@@ -387,6 +389,7 @@ namespace SalesForceV3 {
                         Str::CeldaDbl(r->Cells[2]), Str::N(Str::Celda(r->Cells[3])));
                     gestor->insertarOportunidad(o);
                 }
+                gestor->guardarOportunidades();
             }
             else if (vistaActual == Vista::Productos) {
                 gestor->limpiarProductos();
@@ -397,6 +400,29 @@ namespace SalesForceV3 {
                     gestor->insertarProducto(p);
                 }
                 gestor->guardarProductos();
+            }
+            else if (vistaActual == Vista::Cotizaciones) {
+                // Antes esta vista no tenia rama aqui: los cambios se veian en la
+                // grilla pero se perdian al volver a cargarla (ni siquiera llegaban
+                // a la lista en memoria).
+                gestor->limpiarCotizaciones();
+                for each (DataGridViewRow ^ r in dgvDatos->Rows) {
+                    if (r->IsNewRow || Str::Celda(r->Cells[1]) == "") continue;
+                    Cotizacion c(Str::CeldaInt(r->Cells[0]), Str::CeldaDbl(r->Cells[1]),
+                        Str::N(Str::Celda(r->Cells[2])), Str::N(Str::Celda(r->Cells[3])));
+                    gestor->insertarCotizacion(c);
+                }
+                gestor->guardarCotizaciones();
+            }
+            else if (vistaActual == Vista::Contratos) {
+                gestor->limpiarContratos();
+                for each (DataGridViewRow ^ r in dgvDatos->Rows) {
+                    if (r->IsNewRow || Str::Celda(r->Cells[1]) == "") continue;
+                    Contrato c(Str::CeldaInt(r->Cells[0]), Str::N(Str::Celda(r->Cells[1])),
+                        Str::N(Str::Celda(r->Cells[2])), Str::CeldaDbl(r->Cells[3]));
+                    gestor->insertarContrato(c);
+                }
+                gestor->guardarContratos();
             }
         }
 
@@ -432,6 +458,91 @@ namespace SalesForceV3 {
             gestor->generarDataSet();
             CargarDatasetEnDGV(gestor->getDataSet());
             lblTiempos->Text = "Dataset regenerado (1000 valores aleatorios con semilla fija 42).";
+        }
+        // ====== Metodos Privados =====
+        // ─── Alta de Cliente Potencial (Cola FIFO) ─────────────────────
+        void AgregarClientePotencial() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Nombre", "nombre", true));
+            campos->Add(CampoFormulario::Texto("Correo", "correo", true));
+            campos->Add(CampoFormulario::Texto("Interes", "interes", true));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Cliente Potencial", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Cliente_Potencial c(gestor->getProximoIdCliente(), Str::N(dlg->Texto("nombre")),
+                Str::N(dlg->Texto("correo")), Str::N(dlg->Texto("interes")));
+            gestor->encolarCliente(c);
+            gestor->guardarClientes(); // esta cola no tiene boton "Guardar" propio
+            ConfigurarClientes();
+        }
+
+        // ─── Alta de Oportunidad ────────────────────────────────────────
+        void AgregarOportunidad() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Titulo", "titulo", true));
+            campos->Add(CampoFormulario::Numero("Valor Esperado (S/.)", "valorEsperado"));
+            campos->Add(CampoFormulario::Combo("Fase", "fase", gcnew cli::array<String^>{"Prospeccion", "Negociacion", "Cerrado"}));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nueva Oportunidad", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Oportunidad o(gestor->getProximoIdOportunidad(), Str::N(dlg->Texto("titulo")),
+                dlg->Numero("valorEsperado"), Str::N(dlg->Texto("fase")));
+            gestor->insertarOportunidad(o);
+            gestor->guardarOportunidades();
+            ConfigurarOportunidades();
+        }
+
+        // ─── Alta de Producto ───────────────────────────────────────────
+        void AgregarProducto() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Texto("Nombre", "nombre", true));
+            campos->Add(CampoFormulario::Numero("Precio (S/.)", "precio"));
+            campos->Add(CampoFormulario::Texto("Categoria", "categoria", true));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Producto", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Producto p(gestor->getProximoIdProducto(), Str::N(dlg->Texto("nombre")),
+                dlg->Numero("precio"), Str::N(dlg->Texto("categoria")));
+            gestor->insertarProducto(p);
+            gestor->guardarProductos();
+            ConfigurarProductos();
+        }
+
+        // ─── Alta de Cotizacion ─────────────────────────────────────────
+        void AgregarCotizacion() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Numero("Total (S/.)", "total"));
+            campos->Add(CampoFormulario::Fecha("Fecha de Vencimiento", "vencimiento"));
+            campos->Add(CampoFormulario::Combo("Estado", "estado", gcnew cli::array<String^>{"Pendiente", "Aceptada", "Rechazada"}));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nueva Cotizacion", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Cotizacion c(gestor->getProximoIdCotizacion(), dlg->Numero("total"),
+                Str::N(dlg->FechaFormateada("vencimiento", "dd/MM/yyyy")), Str::N(dlg->Texto("estado")));
+            gestor->insertarCotizacion(c);
+            gestor->guardarCotizaciones();
+            ConfigurarCotizaciones();
+        }
+
+        // ─── Alta de Contrato ───────────────────────────────────────────
+        void AgregarContrato() {
+            auto campos = gcnew List<CampoFormulario^>();
+            campos->Add(CampoFormulario::Fecha("Fecha de Firma", "firma"));
+            campos->Add(CampoFormulario::Texto("Terminos", "terminos", true));
+            campos->Add(CampoFormulario::Numero("Monto Total (S/.)", "monto"));
+
+            FrmAgregarGenerico^ dlg = gcnew FrmAgregarGenerico("Nuevo Contrato", campos);
+            if (dlg->ShowDialog(this) != System::Windows::Forms::DialogResult::OK) return;
+
+            Contrato c(gestor->getProximoIdContrato(), Str::N(dlg->FechaFormateada("firma", "dd/MM/yyyy")),
+                Str::N(dlg->Texto("terminos")), dlg->Numero("monto"));
+            gestor->insertarContrato(c);
+            gestor->guardarContratos();
+            ConfigurarContratos();
         }
 
         void navClientes_Click(Object^, EventArgs^) { btnNavActivo = btnNavClientes;      CambiarVista(Vista::Clientes, btnNavClientes); }

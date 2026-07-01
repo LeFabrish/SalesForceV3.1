@@ -101,6 +101,39 @@ public:
 
     void limpiarContactos() { contactos.limpiar(); contContacto = 1; }
 
+    void guardarContactos() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoD<Contacto>* n = contactos.getCabeza();
+        while (n) {
+            Contacto& c = n->dato;
+            ostringstream ss;
+            ss << c.getId() << "," << c.getNombre() << "," << c.getApellido() << ","
+                << c.getCargo() << "," << c.getTelefono() << "," << c.getEmail() << ","
+                << c.getIdCuenta();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("contactos.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarContactos() {
+        limpiarContactos();
+        ListaSimple<string>* lineas = gestor.cargarLineas("contactos.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Contacto c(stoi(GestorArchivos::campo(l, 0)),
+                GestorArchivos::campo(l, 1), GestorArchivos::campo(l, 2),
+                GestorArchivos::campo(l, 3), GestorArchivos::campo(l, 4),
+                GestorArchivos::campo(l, 5), stoi(GestorArchivos::campo(l, 6)),
+                Direccion("", "", "", ""));
+            insertarContacto(c);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
+
     // lambda 4
     NodoD<Contacto>* buscarContactoPorNombre(const string& nombre) {
         return contactos.buscar([&](Contacto c) { return c.getNombre() == nombre; });
@@ -121,6 +154,38 @@ public:
     }
 
     void limpiarUsuarios() { usuarios.limpiar(); contUsuario = 1; }
+
+    void guardarUsuarios() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoD<UsuarioCRM>* n = usuarios.getCabeza();
+        while (n) {
+            UsuarioCRM& u = n->dato;
+            ostringstream ss;
+            ss << u.getId() << "," << u.getNombre() << "," << u.getApellido() << ","
+                << u.getRol() << "," << u.getUsername() << "," << u.getPassword();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("usuarios.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarUsuarios() {
+        limpiarUsuarios();
+        ListaSimple<string>* lineas = gestor.cargarLineas("usuarios.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            UsuarioCRM u(stoi(GestorArchivos::campo(l, 0)),
+                GestorArchivos::campo(l, 1), GestorArchivos::campo(l, 2),
+                GestorArchivos::campo(l, 3), GestorArchivos::campo(l, 4),
+                GestorArchivos::campo(l, 5));
+            insertarUsuario(u);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
+
     ListaDoble<UsuarioCRM>* getUsuarios() { return &usuarios; }
     int getProximoIdUsuario() { return contUsuario; }
 
@@ -131,6 +196,37 @@ public:
     }
 
     void limpiarInteracciones() { interacciones.limpiar(); contInteraccion = 1; }
+
+    void guardarInteracciones() const {
+        auto* lineas = new ListaSimple<string>();
+        NodoD<Interaccion>* n = interacciones.getCabeza();
+        while (n) {
+            Interaccion& i = n->dato;
+            ostringstream ss;
+            ss << i.getId() << "," << i.getTipo() << "," << i.getDescripcion() << ","
+                << i.getFecha() << "," << i.getIdContacto() << "," << i.getIdUsuario();
+            lineas->insertar(ss.str());
+            n = n->siguiente;
+        }
+        gestor.guardarLineas("interacciones.txt", lineas);
+        delete lineas;
+    }
+
+    void cargarInteracciones() {
+        limpiarInteracciones();
+        ListaSimple<string>* lineas = gestor.cargarLineas("interacciones.txt");
+        NodoS<string>* n = lineas->getCabeza();
+        while (n) {
+            string& l = n->dato;
+            Interaccion i(stoi(GestorArchivos::campo(l, 0)),
+                GestorArchivos::campo(l, 1), GestorArchivos::campo(l, 2),
+                GestorArchivos::campo(l, 3), stoi(GestorArchivos::campo(l, 4)),
+                stoi(GestorArchivos::campo(l, 5)));
+            insertarInteraccion(i);
+            n = n->siguiente;
+        }
+        delete lineas;
+    }
 
     // Recursión: cuenta cuántas interacciones tiene un contacto dado — O(n)
     int contarInteraccionesRec(NodoD<Interaccion>* nodo, int idContacto) {
@@ -145,6 +241,21 @@ public:
 
     ListaDoble<Interaccion>* getInteracciones() { return &interacciones; }
     int getProximoIdInteraccion() { return contInteraccion; }
+
+    // ===== PERSISTENCIA =====
+    void guardarTodo() const {
+        guardarCuentas();
+        guardarContactos();
+        guardarUsuarios();
+        guardarInteracciones();
+    }
+
+    void cargarTodo() {
+        cargarCuentas();
+        cargarContactos();
+        cargarUsuarios();
+        cargarInteracciones();
+    }
 };
 
 #pragma managed(pop)
