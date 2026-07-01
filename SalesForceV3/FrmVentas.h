@@ -30,6 +30,10 @@ namespace SalesForceV3 {
         Panel^ pnlDataset;
         DataGridView^ dgvDataset;
         Label^ lblTiempos;
+        // HITO "22
+        Panel^ pnlArbol;
+		ListBox^ lstArbol;
+		Label^ lblArbolInfo;
 
         Button^ btnNavClientes, ^ btnNavOportunidades, ^ btnNavProductos,
             ^ btnNavCotizaciones, ^ btnNavContratos, ^ btnNavDataset, ^ btnNavHito2;
@@ -81,6 +85,7 @@ namespace SalesForceV3 {
             btnNavHito2->Font = gcnew Drawing::Font("Segoe UI", 8.5f, FontStyle::Italic);
 
             btnNavClientes->Click += gcnew EventHandler(this, &FrmVentas::navClientes_Click);
+            btnNavHito2->Click += gcnew EventHandler(this, &FrmVentas::navHito2_Click);
             btnNavOportunidades->Click += gcnew EventHandler(this, &FrmVentas::navOportunidades_Click);
             btnNavProductos->Click += gcnew EventHandler(this, &FrmVentas::navProductos_Click);
             btnNavCotizaciones->Click += gcnew EventHandler(this, &FrmVentas::navCotizaciones_Click);
@@ -124,11 +129,74 @@ namespace SalesForceV3 {
 
             CrearPanelGrid();
             CrearPanelDataset();
+            CrearPanelArbol(); // <-- añadir inicialización del panel del árbol
 
             pnlContenido->Controls->Add(pnlGrid);
             pnlContenido->Controls->Add(pnlDataset);
+            pnlContenido->Controls->Add(pnlArbol); // <-- añadir también al contenedor
             pnlContenido->Controls->Add(lblTitulo);
             this->Controls->Add(pnlContenido);
+        }
+        void CrearPanelArbol() {
+            pnlArbol = gcnew Panel(); pnlArbol->Dock = DockStyle::Fill;
+            pnlArbol->BackColor = Color::White; pnlArbol->Visible = false;
+
+            Panel^ pnlBotonesArbol = gcnew Panel();
+            pnlBotonesArbol->Dock = DockStyle::Top; pnlBotonesArbol->Height = 55;
+            pnlBotonesArbol->Padding = System::Windows::Forms::Padding(8);
+
+            Button^ btnInOrden = EstiloCRM::CrearBotonPrimario("  InOrden");
+            Button^ btnPreOrden = EstiloCRM::CrearBotonPrimario("  PreOrden");
+            Button^ btnPostOrden = EstiloCRM::CrearBotonPrimario("  PostOrden");
+            btnInOrden->Width = 110; btnPreOrden->Width = 110; btnPostOrden->Width = 110;
+            btnInOrden->Location = Point(8, 10);
+            btnPreOrden->Location = Point(128, 10);
+            btnPostOrden->Location = Point(248, 10);
+            btnInOrden->Click += gcnew EventHandler(this, &FrmVentas::inOrden_Click);
+            btnPreOrden->Click += gcnew EventHandler(this, &FrmVentas::preOrden_Click);
+            btnPostOrden->Click += gcnew EventHandler(this, &FrmVentas::postOrden_Click);
+
+            pnlBotonesArbol->Controls->Add(btnInOrden);
+            pnlBotonesArbol->Controls->Add(btnPreOrden);
+            pnlBotonesArbol->Controls->Add(btnPostOrden);
+
+            lblArbolInfo = gcnew Label();
+            lblArbolInfo->Dock = DockStyle::Bottom; lblArbolInfo->Height = 30;
+            lblArbolInfo->ForeColor = Color::FromArgb(30, 70, 120);
+            lblArbolInfo->Padding = System::Windows::Forms::Padding(10, 6, 0, 0);
+            lblArbolInfo->Text = "Presiona InOrden, PreOrden o PostOrden para recorrer el arbol.";
+
+            lstArbol = gcnew ListBox();
+            lstArbol->Dock = DockStyle::Fill;
+            lstArbol->Font = gcnew Drawing::Font("Consolas", 9.5f);
+
+            pnlArbol->Controls->Add(lstArbol);
+            pnlArbol->Controls->Add(lblArbolInfo);
+            pnlArbol->Controls->Add(pnlBotonesArbol);
+        }
+
+        // ─── Recorridos del BST de Oportunidades ─────────────────────────
+        void inOrden_Click(Object^, EventArgs^) { MostrarRecorridoArbol(0); }
+        void preOrden_Click(Object^, EventArgs^) { MostrarRecorridoArbol(1); }
+        void postOrden_Click(Object^, EventArgs^) { MostrarRecorridoArbol(2); }
+
+        void MostrarRecorridoArbol(int tipo) {
+            lstArbol->Items->Clear();
+            int contador = 1;
+            std::vector<Oportunidad> vec;
+            String^ nombreRecorrido;
+            switch (tipo) {
+            case 0: vec = gestor->getArbolOportunidades()->toVectorOrdenado(); nombreRecorrido = "InOrden (ascendente por valor)"; break;
+            case 1: vec = gestor->getArbolOportunidades()->toVectorPreOrden(); nombreRecorrido = "PreOrden (raiz-izq-der)"; break;
+            default: vec = gestor->getArbolOportunidades()->toVectorPostOrden(); nombreRecorrido = "PostOrden (izq-der-raiz)"; break;
+            }
+            for (size_t i = 0; i < vec.size(); ++i) {
+                Oportunidad& o = vec[i];
+                lstArbol->Items->Add(String::Format("{0}. {1}  —  S/.{2:0.00}  ({3})",
+                    contador++, Str::M(o.getTitulo()), o.getValorEsperado(), Str::M(o.getFase())));
+            }
+            lblArbolInfo->Text = String::Format("{0}  |  Altura: {1}  |  Nodos: {2}",
+                nombreRecorrido, gestor->getArbolOportunidades()->altura(), gestor->getArbolOportunidades()->getTamanio());
         }
 
         void CrearPanelGrid() {
@@ -214,6 +282,7 @@ namespace SalesForceV3 {
             HighlightNav(boton);
             pnlGrid->Visible = (v != Vista::Dataset);
             pnlDataset->Visible = (v == Vista::Dataset);
+			pnlArbol->Visible = (v == Vista::Hito2);
 
             switch (v) {
             case Vista::Clientes:      ConfigurarClientes();      break;
@@ -222,13 +291,15 @@ namespace SalesForceV3 {
             case Vista::Cotizaciones:  ConfigurarCotizaciones();  break;
             case Vista::Contratos:     ConfigurarContratos();     break;
             case Vista::Dataset:       ConfigurarDataset();       break;
+			case Vista::Hito2: lblTitulo->Text = "Arbol Binario de Oportunidades [Hito 2]"; break;
             }
         }
 
         void HighlightNav(Button^ b) {
-            cli::array<Button^>^ navs = gcnew cli::array<Button^>(6);
+            cli::array<Button^>^ navs = gcnew cli::array<Button^>(7);
             navs[0] = btnNavClientes; navs[1] = btnNavOportunidades; navs[2] = btnNavProductos;
             navs[3] = btnNavCotizaciones; navs[4] = btnNavContratos; navs[5] = btnNavDataset;
+			navs[6] = btnNavHito2;
             for each (Button ^ n in navs) n->BackColor = Color::FromArgb(0, 85, 170);
             if (b->Enabled) b->BackColor = Color::FromArgb(0, 55, 120);
         }
@@ -546,6 +617,7 @@ namespace SalesForceV3 {
         }
 
         void navClientes_Click(Object^, EventArgs^) { btnNavActivo = btnNavClientes;      CambiarVista(Vista::Clientes, btnNavClientes); }
+        void navHito2_Click(Object^, EventArgs^) { btnNavActivo = btnNavHito2; CambiarVista(Vista::Hito2, btnNavHito2); } // Hito 2
         void navOportunidades_Click(Object^, EventArgs^) { btnNavActivo = btnNavOportunidades; CambiarVista(Vista::Oportunidades, btnNavOportunidades); }
         void navProductos_Click(Object^, EventArgs^) { btnNavActivo = btnNavProductos;     CambiarVista(Vista::Productos, btnNavProductos); }
         void navCotizaciones_Click(Object^, EventArgs^) { btnNavActivo = btnNavCotizaciones;  CambiarVista(Vista::Cotizaciones, btnNavCotizaciones); }

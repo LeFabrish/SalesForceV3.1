@@ -49,7 +49,7 @@ namespace SalesForceV3 {
         void OnLoad(Object^, EventArgs^) {
             modClientes = gcnew FrmClientes(&sistema->gestorCliente);
             modVentas = gcnew FrmVentas(&sistema->gestorVenta);
-            modSoporte = gcnew FrmSoporte(&sistema->gestorSoporte);
+            modSoporte = gcnew FrmSoporte(&sistema->gestorSoporte, &sistema->gestorCliente);
             ConfigurarHijo(modClientes);
             ConfigurarHijo(modVentas);
             ConfigurarHijo(modSoporte);

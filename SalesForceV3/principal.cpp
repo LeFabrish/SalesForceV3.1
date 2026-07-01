@@ -1,3 +1,4 @@
+#include "FrmLogin.h"
 #include "FrmPrincipalh.h"
 
 using namespace System;
@@ -8,7 +9,11 @@ int main()
 {
     Application::EnableVisualStyles();
     Application::SetCompatibleTextRenderingDefault(false);
-    Application::Run(gcnew SalesForceV3::FrmPrincipal());
+
+    SalesForceV3::FrmLogin^ login = gcnew SalesForceV3::FrmLogin();
+    if (login->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+        Application::Run(gcnew SalesForceV3::FrmPrincipal());
+    }
 
     return 0;
 }

@@ -39,10 +39,10 @@ namespace SalesForceV3 {
 
         // Mini-sidebar buttons
         Button^ btnNavCuentas, ^ btnNavContactos, ^ btnNavUsuarios,
-            ^ btnNavInteracciones, ^ btnNavHash;
+            ^ btnNavInteracciones, ^ btnNavHash, ^ btnNavAvl;
         Button^ btnNavActivo;
 
-        enum class Vista { Cuentas, Contactos, Usuarios, Interacciones, HashBusqueda };
+        enum class Vista { Cuentas, Contactos, Usuarios, Interacciones, HashBusqueda, Avl };
         Vista vistaActual;
 
     public:
@@ -85,12 +85,14 @@ namespace SalesForceV3 {
             btnNavUsuarios = CrearNavBtn("  Usuarios CRM");
             btnNavContactos = CrearNavBtn("  Contactos");
             btnNavCuentas = CrearNavBtn("  Cuentas");
+			btnNavAvl = CrearNavBtn("  Arbol AVL [Cuentas]");
 
             btnNavCuentas->Click += gcnew EventHandler(this, &FrmClientes::navCuentas_Click);
             btnNavContactos->Click += gcnew EventHandler(this, &FrmClientes::navContactos_Click);
             btnNavUsuarios->Click += gcnew EventHandler(this, &FrmClientes::navUsuarios_Click);
             btnNavInteracciones->Click += gcnew EventHandler(this, &FrmClientes::navInteracciones_Click);
             btnNavHash->Click += gcnew EventHandler(this, &FrmClientes::navHash_Click);
+			btnNavAvl->Click += gcnew EventHandler(this, &FrmClientes::navAvl_Click);
 
             pnlMiniSidebar->Controls->Add(btnNavHash);
             pnlMiniSidebar->Controls->Add(btnNavInteracciones);
@@ -98,6 +100,7 @@ namespace SalesForceV3 {
             pnlMiniSidebar->Controls->Add(btnNavContactos);
             pnlMiniSidebar->Controls->Add(btnNavCuentas);
             pnlMiniSidebar->Controls->Add(lbl);
+            pnlMiniSidebar->Controls->Add(btnNavAvl);
 
             this->Controls->Add(pnlMiniSidebar);
         }
@@ -134,10 +137,12 @@ namespace SalesForceV3 {
 
             CrearPanelGrid();
             CrearPanelHash();
+            CrearPanelAvl();
 
             pnlContenido->Controls->Add(pnlGrid);
             pnlContenido->Controls->Add(pnlHash);
             pnlContenido->Controls->Add(lblTitulo);
+            pnlContenido->Controls->Add(pnlAvl);
             this->Controls->Add(pnlContenido);
         }
 
@@ -175,6 +180,50 @@ namespace SalesForceV3 {
 
             pnlGrid->Controls->Add(dgvDatos);
             pnlGrid->Controls->Add(pnlBotones);
+        }
+        Panel^ pnlAvl;
+        ListBox^ lstAvl;
+        Label^ lblAvlInfo;
+
+        void CrearPanelAvl() {
+            pnlAvl = gcnew Panel(); pnlAvl->Dock = DockStyle::Fill;
+            pnlAvl->BackColor = Color::White; pnlAvl->Padding = System::Windows::Forms::Padding(20);
+            pnlAvl->Visible = false;
+
+            Label^ lbl1 = gcnew Label();
+            lbl1->Text = "Cuentas en orden alfabetico (Arbol AVL balanceado):";
+            lbl1->Font = gcnew Drawing::Font("Segoe UI", 10.0f);
+            lbl1->AutoSize = true; lbl1->Location = Point(20, 20);
+
+            lblAvlInfo = gcnew Label();
+            lblAvlInfo->Font = gcnew Drawing::Font("Segoe UI", 9.5f);
+            lblAvlInfo->ForeColor = Color::FromArgb(60, 80, 110);
+            lblAvlInfo->AutoSize = false; lblAvlInfo->Size = Drawing::Size(600, 26);
+            lblAvlInfo->Location = Point(20, 50);
+
+            lstAvl = gcnew ListBox();
+            lstAvl->Font = gcnew Drawing::Font("Consolas", 9.5f);
+            lstAvl->Location = Point(20, 85);
+            lstAvl->Size = Drawing::Size(600, 320);
+            lstAvl->Anchor = static_cast<AnchorStyles>(AnchorStyles::Top | AnchorStyles::Bottom | AnchorStyles::Left | AnchorStyles::Right);
+
+            pnlAvl->Controls->Add(lstAvl);
+            pnlAvl->Controls->Add(lblAvlInfo);
+            pnlAvl->Controls->Add(lbl1);
+        }
+
+        void ConfigurarAvl() {
+            lblTitulo->Text = "Cuentas — Arbol AVL";
+            lstAvl->Items->Clear();
+            int contador = 1;
+            std::vector<Cuenta> v = gestor->getAvlCuentas()->toVectorOrdenado();
+            for (size_t i = 0; i < v.size(); ++i) {
+                Cuenta& c = v[i];
+                lstAvl->Items->Add(String::Format("{0}. {1}  ({2})", contador++, Str::M(c.getNombre()), Str::M(c.getIndustria())));
+            }
+            lblAvlInfo->Text = String::Format("Altura: {0}  |  Factor de balance en raiz: {1}  |  Nodos: {2}",
+                gestor->getAvlCuentas()->alturaArbol(), gestor->getAvlCuentas()->getFactorBalanceRaiz(),
+                gestor->getAvlCuentas()->getTamanio());
         }
 
         void CrearPanelHash() {
@@ -228,8 +277,9 @@ namespace SalesForceV3 {
             vistaActual = v;
             HighlightNav(boton);
 
-            pnlGrid->Visible = (v != Vista::HashBusqueda);
+            pnlGrid->Visible = (v != Vista::HashBusqueda && v != Vista::Avl);
             pnlHash->Visible = (v == Vista::HashBusqueda);
+			pnlAvl->Visible = (v == Vista::Avl);
 
             switch (v) {
             case Vista::Cuentas:       ConfigurarCuentas();       break;
@@ -237,13 +287,14 @@ namespace SalesForceV3 {
             case Vista::Usuarios:      ConfigurarUsuarios();      break;
             case Vista::Interacciones: ConfigurarInteracciones(); break;
             case Vista::HashBusqueda:  ConfigurarHash();          break;
+			case Vista::Avl:           ConfigurarAvl();           break;
             }
         }
 
         void HighlightNav(Button^ b) {
-            cli::array<Button^>^ navs = gcnew cli::array<Button^>(5);
+            cli::array<Button^>^ navs = gcnew cli::array<Button^>(6);
             navs[0] = btnNavCuentas; navs[1] = btnNavContactos; navs[2] = btnNavUsuarios;
-            navs[3] = btnNavInteracciones; navs[4] = btnNavHash;
+			navs[3] = btnNavInteracciones; navs[4] = btnNavHash; navs[5] = btnNavAvl;
             for each (Button ^ n in navs)
                 n->BackColor = Color::FromArgb(0, 85, 170);
             b->BackColor = Color::FromArgb(0, 55, 120);
@@ -595,6 +646,7 @@ namespace SalesForceV3 {
         void navUsuarios_Click(Object^, EventArgs^) { btnNavActivo = btnNavUsuarios;      CambiarVista(Vista::Usuarios, btnNavUsuarios); }
         void navInteracciones_Click(Object^, EventArgs^) { btnNavActivo = btnNavInteracciones; CambiarVista(Vista::Interacciones, btnNavInteracciones); }
         void navHash_Click(Object^, EventArgs^) { btnNavActivo = btnNavHash;          CambiarVista(Vista::HashBusqueda, btnNavHash); }
+        void navAvl_Click(Object^, EventArgs^) { btnNavActivo = btnNavAvl; CambiarVista(Vista::Avl, btnNavAvl); }
     private: System::Void InitializeComponent() {
         this->SuspendLayout();
         // 

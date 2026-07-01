@@ -49,6 +49,9 @@
     <ClCompile Include="Frmagregargenerico.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
+    <ClCompile Include="Frmlogin.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FrmPrincipalh.h">
@@ -157,6 +160,18 @@
       <Filter>Model</Filter>
     </ClInclude>
     <ClInclude Include="Frmagregargenerico.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="ArbolBinario.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Arbolavl.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Grafo.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Frmlogin.h">
       <Filter>Model</Filter>
     </ClInclude>
   </ItemGroup>

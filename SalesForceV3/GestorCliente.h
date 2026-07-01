@@ -5,6 +5,8 @@
 #include <sstream>
 #include "ListaDoble.h"
 #include "HashTable.h"
+#include "Arbolavl.h"
+#include "Grafo.h"
 #include "GestorArchivos.h"
 #include "Cuenta.h"
 #include "Contacto.h"
@@ -21,20 +23,44 @@ private:
     ListaDoble<Interaccion> interacciones;
     // HashTable indexa Cuentas por nombre → búsqueda O(1) vs O(n) de la lista
     HashTable<string, Cuenta> hashCuentas;
+	ArbolAVL<Cuenta>        avlCuentas; // HITO "2 O (log n)
+	Grafo<string>           grafoCuentas; // HITO "2 cuentas
     GestorArchivos gestor;
     int contCuenta = 1, contContacto = 1, contUsuario = 1, contInteraccion = 1;
 
 public:
     // ─── CUENTAS ──────────────────────────────────────────────────
+    GestorCliente() : avlCuentas([](const Cuenta& a, const Cuenta& b) {
+        return a.getNombre() < b.getNombre();
+        }) {
+    }
     void insertarCuenta(Cuenta c) {
         cuentas.insertar(c);
         hashCuentas.insertar(c.getNombre(), c);
+        avlCuentas.insertar(c);
+        
         if (c.getId() >= contCuenta) contCuenta = c.getId() + 1;
     }
+    // refleja el estado actual sin recalcular desde cero en cada alta
+
+    void actualizarGrafoParaCuenta(const Cuenta& nueva) {
+		grafoCuentas.insertarVertice(nueva.getNombre());
+        NodoD<Cuenta>* n = cuentas.getCabeza();
+        while (n) {
+            if(n->dato.getId() != nueva.getId() &&
+				n->dato.getIndustria() == nueva.getIndustria()) {
+                grafoCuentas.insertarArista(nueva.getNombre(), n->dato.getNombre(), n->dato.getIndustria());
+            }
+            n = n->siguiente;
+        }
+    }
+
 
     void limpiarCuentas() {
         cuentas.limpiar();
         hashCuentas.limpiar();
+        avlCuentas.vaciar();
+        grafoCuentas.vaciar();
         contCuenta = 1;
     }
 
@@ -91,6 +117,8 @@ public:
     int    getHashColisiones() { return hashCuentas.colisionesMaximas(); }
     // Si necesita la capacidad real de la tabla hash, exponerlo mediante un método público
     int    getHashCapacidad() { return hashCuentas.getCapacidad(); }
+    ArbolAVL<Cuenta>* getAvlCuentas() { return &avlCuentas; }
+    Grafo<string>* getGrafoCuentas() { return &grafoCuentas; }
     int    getProximoIdCuenta() { return contCuenta; }
 
     // ─── CONTACTOS ────────────────────────────────────────────────
