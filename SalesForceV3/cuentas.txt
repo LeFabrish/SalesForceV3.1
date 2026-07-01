@@ -4,3 +4,6 @@
 4,Alicorp,Consumo Masivo,01-315-0800,info@alicorp.pe,Peru,Lima,Callao,Jr. Lima 100
 5,Falabella Peru,Retail,01-610-0000,clientes@falabella.pe,Peru,Lima,San Borja,Av. Angamos 888
 6,Entel,Telecomunicaciones,991-948-072,cacerescamperonfabricio@gmail.com,Peru,Lima,SJL,Av. Mi casa
+7,BCP,Banca,01-610-2220,cae@gmail.com,Peru,Lima,La Callao,Av. Lomas 1010
+8,Scotiabank Peru,Banca,01-211-1300,contacto@scotiabank.com.pe,Peru,Lima,San Isidro,Av. Dionisio Derteano 102
+9,BBVA Peru,Banca,01-211-2200,info@bbva.pe,Peru,Lima,San Isidro,Av. Republica de Panama 3055

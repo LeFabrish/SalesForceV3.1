@@ -38,20 +38,50 @@ public:
         cuentas.insertar(c);
         hashCuentas.insertar(c.getNombre(), c);
         avlCuentas.insertar(c);
+		actualizarGrafoParaCuenta(c);
         
         if (c.getId() >= contCuenta) contCuenta = c.getId() + 1;
     }
     // refleja el estado actual sin recalcular desde cero en cada alta
 
-    void actualizarGrafoParaCuenta(const Cuenta& nueva) {
-		grafoCuentas.insertarVertice(nueva.getNombre());
+	static string claveVertice(const Cuenta& c) { 
+		return to_string(c.getId()) + "-" + c.getNombre();
+    }
+
+    // Posicion 0-based de "cuenta" dentro de las cuentas de su misma industria
+    // (cuenta cuantas cuentas de esa industria ya existian antes que ella).
+    int indiceEnIndustria(const Cuenta& cuenta) {
+        int indice = 0;
         NodoD<Cuenta>* n = cuentas.getCabeza();
         while (n) {
-            if(n->dato.getId() != nueva.getId() &&
-				n->dato.getIndustria() == nueva.getIndustria()) {
-                grafoCuentas.insertarArista(nueva.getNombre(), n->dato.getNombre(), n->dato.getIndustria());
+            if (n->dato.getId() != cuenta.getId() && n->dato.getIndustria() == cuenta.getIndustria()) indice++;
+            n = n->siguiente;
+        }
+        return indice;
+    }
+
+    // Cuenta que ocupa la posicion "posicion" (0-based) dentro de una industria.
+    Cuenta* cuentaEnPosicionIndustria(const string& industria, int posicion) {
+        int indice = 0;
+        NodoD<Cuenta>* n = cuentas.getCabeza();
+        while (n) {
+            if (n->dato.getIndustria() == industria) {
+                if (indice == posicion) return &n->dato;
+                indice++;
             }
             n = n->siguiente;
+        }
+        return nullptr;
+    }
+
+    void actualizarGrafoParaCuenta(const Cuenta& nueva) {
+        grafoCuentas.insertarVertice(claveVertice(nueva));
+
+        int indice = indiceEnIndustria(nueva);
+        if (indice > 0) {
+            int posicionPadre = (indice - 1) / 2;
+            Cuenta* padre = cuentaEnPosicionIndustria(nueva.getIndustria(), posicionPadre);
+            if (padre) grafoCuentas.insertarArista(claveVertice(nueva), claveVertice(*padre), nueva.getIndustria());
         }
     }
 

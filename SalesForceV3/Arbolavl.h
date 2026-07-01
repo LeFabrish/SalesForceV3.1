@@ -146,6 +146,20 @@ private:
         inOrdenRec(nodo->derecho, accion);
     }
 
+    void preOrdenRec(NodoAVL<T>* nodo, function<void(const T&)> accion) const {
+        if (!nodo) return;
+        accion(nodo->dato);
+        preOrdenRec(nodo->izquierdo, accion);
+        preOrdenRec(nodo->derecho, accion);
+    }
+
+    void postOrdenRec(NodoAVL<T>* nodo, function<void(const T&)> accion) const {
+        if (!nodo) return;
+        postOrdenRec(nodo->izquierdo, accion);
+        postOrdenRec(nodo->derecho, accion);
+        accion(nodo->dato);
+    }
+
     void liberarRec(NodoAVL<T>* nodo) {
         if (!nodo) return;
         liberarRec(nodo->izquierdo);
@@ -187,6 +201,21 @@ public:
     vector<T> toVectorOrdenado() const {
         vector<T> resultado;
         inOrdenRec(raiz, [&](const T& d) { resultado.push_back(d); });
+        return resultado;
+    }
+    // ─── 6b. Recorrido PreOrden / PostOrden ──────────────────────
+    void recorridoPreOrden(function<void(const T&)> accion) const { preOrdenRec(raiz, accion); }
+    void recorridoPostOrden(function<void(const T&)> accion) const { postOrdenRec(raiz, accion); }
+
+    vector<T> toVectorPreOrden() const {
+        vector<T> resultado;
+        preOrdenRec(raiz, [&](const T& d) { resultado.push_back(d); });
+        return resultado;
+    }
+
+    vector<T> toVectorPostOrden() const {
+        vector<T> resultado;
+        postOrdenRec(raiz, [&](const T& d) { resultado.push_back(d); });
         return resultado;
     }
 

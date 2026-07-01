@@ -79,7 +79,6 @@ namespace SalesForceV3 {
             btnNavSoluciones = CrearNavBtn("  Soluciones  [Pila]");
             btnNavCasos = CrearNavBtn("  Casos  [Cola]");
 
-            btnNavGrafo->ForeColor = Color::FromArgb(130, 165, 200);
             btnNavGrafo->Font = gcnew Drawing::Font("Segoe UI", 8.5f, FontStyle::Italic);
 			btnNavGrafo->Click += gcnew EventHandler(this, &FrmSoporte::navGrafo_Click);
 
@@ -207,61 +206,69 @@ namespace SalesForceV3 {
             pnlHito2->Controls->Add(pnlControles);
         }
 
-        // ─── Dibujo del grafo — vertices en circulo, aristas como lineas ────
+       // ─── Dibujo del grafo — vertices en circulo, aristas como lineas ────
         void grafo_Paint(Object^ sender, PaintEventArgs^ e) {
             Graphics^ g = e->Graphics;
             g->SmoothingMode = Drawing2D::SmoothingMode::AntiAlias;
 
-            List<String^>^ nombres = gcnew List<String^>();
-            NodoD<Cuenta>* n = gestorCliente->getCuentas()->getCabeza();
-            while (n) { nombres->Add(Str::M(n->dato.getNombre())); n = n->siguiente; }
-            if (nombres->Count == 0) return;
+            // El grafo (no la lista cruda de Cuenta) es la fuente de verdad de que
+            // vertices dibujar: asi lo que se ve coincide siempre con lo que BFS/DFS
+            // realmente pueden recorrer.
+            Grafo<string>* grafo = gestorCliente->getGrafoCuentas();
+            std::vector<string> verts = grafo->obtenerVertices();
+            if (verts.empty()) return;
+
+            List<String^>^ claves = gcnew List<String^>();
+            for (const string& v : verts) claves->Add(Str::M(v));
 
             int cx = pnlGrafoDibujo->Width / 2;
             int cy = pnlGrafoDibujo->Height / 2;
             int radio = Math::Min(cx, cy) - 60;
             if (radio < 40) radio = 40;
 
-            cli::array<Point>^ posiciones = gcnew cli::array<Point>(nombres->Count);
-            for (int i = 0; i < nombres->Count; i++) {
-                double angulo = 2 * Math::PI * i / nombres->Count;
+            cli::array<Point>^ posiciones = gcnew cli::array<Point>(claves->Count);
+            for (int i = 0; i < claves->Count; i++) {
+                double angulo = 2 * Math::PI * i / claves->Count;
                 posiciones[i] = Point(cx + (int)(radio * Math::Cos(angulo)), cy + (int)(radio * Math::Sin(angulo)));
             }
 
             Pen^ lapizArista = gcnew Pen(Color::FromArgb(190, 205, 225), 1.5f);
-            Grafo<string>* grafo = gestorCliente->getGrafoCuentas();
-            // Dibujar cada arista una sola vez: iterar vértices y sus vecinos
-            std::vector<string> verts = grafo->obtenerVertices();
             for (size_t i = 0; i < verts.size(); i++) {
-                int ia = nombres->IndexOf(Str::M(verts[i]));
-                if (ia < 0) continue;
                 std::vector<string> vecinos = grafo->obtenerVecinos(verts[i]);
                 for (const string& b : vecinos) {
-                    int ib = nombres->IndexOf(Str::M(b));
-                    // para evitar dibujar la misma arista dos veces, solo dibujar si ib > ia
-                    if (ib >= 0 && ib > ia) g->DrawLine(lapizArista, posiciones[ia], posiciones[ib]);
+                    int ib = claves->IndexOf(Str::M(b));
+                    // evita dibujar la misma arista dos veces (no dirigida)
+                    if (ib >= 0 && ib > (int)i) g->DrawLine(lapizArista, posiciones[i], posiciones[ib]);
                 }
             }
             delete lapizArista;
 
-            for (int i = 0; i < nombres->Count; i++) {
-                bool enRecorrido = nodosResaltados->Contains(nombres[i]);
+            for (int i = 0; i < claves->Count; i++) {
+                bool enRecorrido = nodosResaltados->Contains(claves[i]);
                 Brush^ relleno = enRecorrido ? gcnew SolidBrush(Color::FromArgb(255, 140, 0))
                     : gcnew SolidBrush(EstiloCRM::AzulOscuro());
                 int r = 16;
                 g->FillEllipse(relleno, posiciones[i].X - r, posiciones[i].Y - r, r * 2, r * 2);
                 g->DrawEllipse(Pens::White, posiciones[i].X - r, posiciones[i].Y - r, r * 2, r * 2);
-                g->DrawString(nombres[i], gcnew Drawing::Font("Segoe UI", 7.5f), Brushes::Black,
+                g->DrawString(NombreVisible(claves[i]), gcnew Drawing::Font("Segoe UI", 7.5f), Brushes::Black,
                     posiciones[i].X - 30, posiciones[i].Y + r + 2);
                 delete relleno;
             }
+        }
+
+        String^ NombreVisible(String^ clave) {
+            int guion = clave->IndexOf("-");
+            return (guion == -1) ? clave : clave->Substring(guion + 1);
         }
 
         // ─── Preparar combo + estadisticas al entrar a la vista Grafo ───────
         void PrepararGrafo() {
             cmbVerticeInicio->Items->Clear();
             NodoD<Cuenta>* n = gestorCliente->getCuentas()->getCabeza();
-            while (n) { cmbVerticeInicio->Items->Add(Str::M(n->dato.getNombre())); n = n->siguiente; }
+            while (n) {
+                cmbVerticeInicio->Items->Add(n->dato.getId() + "-" + Str::M(n->dato.getNombre()));
+                n = n->siguiente;
+            }
             if (cmbVerticeInicio->Items->Count > 0) cmbVerticeInicio->SelectedIndex = 0;
 
             nodosResaltados->Clear();
@@ -284,12 +291,12 @@ namespace SalesForceV3 {
             nodosResaltados->Clear();
             int paso = 1;
             for (const string& nombre : orden) {
-                String^ n = Str::M(nombre);
-                lstRecorrido->Items->Add(String::Format("{0}. {1}", paso++, n));
-                nodosResaltados->Add(n);
+                String^ clave = Str::M(nombre);
+                lstRecorrido->Items->Add(String::Format("{0}. {1}", paso++, NombreVisible(clave)));
+                nodosResaltados->Add(clave);
             }
             lblInfoGrafo->Text = String::Format("{0}: {1} cuenta(s) alcanzada(s) desde \"{2}\".",
-                esBfs ? "BFS" : "DFS", orden.size(), cmbVerticeInicio->SelectedItem->ToString());
+                esBfs ? "BFS" : "DFS", orden.size(), NombreVisible(cmbVerticeInicio->SelectedItem->ToString()));
             pnlGrafoDibujo->Invalidate();
         }
 

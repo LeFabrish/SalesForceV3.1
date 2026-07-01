@@ -80,8 +80,6 @@ namespace SalesForceV3 {
             btnNavOportunidades = CrearNavBtn("  Oportunidades");
             btnNavClientes = CrearNavBtn("  Clientes Potenciales");
 
-            btnNavHito2->Enabled = false;
-            btnNavHito2->ForeColor = Color::FromArgb(130, 165, 200);
             btnNavHito2->Font = gcnew Drawing::Font("Segoe UI", 8.5f, FontStyle::Italic);
 
             btnNavClientes->Click += gcnew EventHandler(this, &FrmVentas::navClientes_Click);
@@ -280,7 +278,7 @@ namespace SalesForceV3 {
         void CambiarVista(Vista v, Button^ boton) {
             vistaActual = v;
             HighlightNav(boton);
-            pnlGrid->Visible = (v != Vista::Dataset);
+            pnlGrid->Visible = (v != Vista::Dataset && v != Vista::Hito2);
             pnlDataset->Visible = (v == Vista::Dataset);
 			pnlArbol->Visible = (v == Vista::Hito2);
 
