@@ -173,9 +173,9 @@ namespace SalesForceV3 {
                 return cb;
             }
             case TipoCampo::Fecha: {
-                MonthCalendar^ mc = gcnew MonthCalendar();
-                mc->MaxSelectionCount = 1;
-                return mc;
+                DateTimePicker^ dtp = gcnew DateTimePicker();
+                dtp->Format = DateTimePickerFormat::Short; 
+                return dtp;
             }
             default: {
                 TextBox^ tb = gcnew TextBox();
