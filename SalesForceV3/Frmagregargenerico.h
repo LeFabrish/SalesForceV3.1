@@ -7,7 +7,7 @@
 //  Formulario modal unico que reemplaza el viejo flujo de "+Agregar agrega una
 //  fila vacia en la grilla". Recibe la lista de CampoFormulario de la entidad
 //  (armada por el Frm* que lo invoca) y construye los controles -TextBox,
-//  ComboBox o MonthCalendar- de forma dinamica. Al presionar "Listo" valida
+//  ComboBox o DateTimePicker- de forma dinamica. Al presionar "Listo" valida
 //  que los campos obligatorios esten completos (Descripcion nunca lo es) y,
 //  si todo es correcto, deja los valores disponibles para que el invocador
 //  los lea con Texto()/IdSeleccionado()/FechaFormateada() y construya la
@@ -54,11 +54,11 @@ namespace SalesForceV3 {
             catch (Exception^) { return 0; }
         }
 
-        // Fecha elegida en el MonthCalendar, formateada segun el patron .NET dado
-        // (ej. "dd/MM/yyyy" o "dd/MM HH:mm").
+        // Fecha elegida en el DateTimePicker, formateada segun el patron .NET dado
+		// (ej. "dd/MM/yyyy" o "yyyy-MM-dd"). Si el control no es de tipo Fecha, devuelve "".
         String^ FechaFormateada(String^ clave, String^ formato) {
-            MonthCalendar^ mc = static_cast<MonthCalendar^>(controles[clave]);
-            return mc->SelectionStart.ToString(formato);
+            DateTimePicker^ dtp = static_cast<DateTimePicker^>(controles[clave]);
+            return dtp->Value.ToString(formato);
         }
 
         // Valor numerico de un campo Numerico. Se usa InvariantCulture para que
@@ -190,7 +190,7 @@ namespace SalesForceV3 {
         // ═══════════════════════════════════════════════════════════
         void Listo_Click(Object^, EventArgs^) {
             for each (CampoFormulario ^ campo in campos) {
-                if (campo->Tipo == TipoCampo::Fecha) continue; // MonthCalendar siempre tiene un valor
+                if (campo->Tipo == TipoCampo::Fecha) continue; 
                 if (campo->Obligatorio && Texto(campo->Clave) == "") {
                     MessageBox::Show("Es obligatorio llenar el formulario para agregar al sistema.",
                         "Campos incompletos", MessageBoxButtons::OK, MessageBoxIcon::Warning);
