@@ -97,25 +97,6 @@ public:
         }
     }
 
-    template <typename Comparador>
-    void ordenarBurbujaOptimizada(Comparador comp) {
-        if (!cabeza) return;
-        NodoS<T>* ultimo = nullptr;
-        bool ordenado;
-        do {
-            ordenado = true;
-            NodoS<T>* actual = cabeza;
-            while (actual->siguiente != ultimo) {
-                if (comp(actual->dato, actual->siguiente->dato)) {
-                    swap(actual->dato, actual->siguiente->dato);
-                    ordenado = false;
-                }
-                actual = actual->siguiente;
-            }
-            ultimo = actual;
-        } while (!ordenado);
-    }
-
     // ─── Conversión y consulta ────────────────────────────────────
     vector<T> toVector() const {
         vector<T> v;
