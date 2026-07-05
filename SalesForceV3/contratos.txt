@@ -1,0 +1,4 @@
+1, "01/04/2025", "Contrato anual CRM Enterprise",    60000.0
+2, "15/03/2025", "Soporte y mantenimiento 12 meses",  9600.0
+3, "10/05/2025", "Licencia Analytics Plus 24 meses", 18000.0
+4, "22/02/2025", "Implementacion API + capacitacion",12500.0

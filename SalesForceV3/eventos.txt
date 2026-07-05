@@ -1,0 +1,3 @@
+1, "Reunion de ventas mensual",    "15/06 09:00", "Sala A"
+2, "Demo CRM para BCP",           "18/06 14:00", "Virtual - Zoom"
+3, "Capacitacion equipo soporte", "22/06 10:00", "Sala B"

@@ -2,10 +2,11 @@
 
 #pragma managed(push, off)
 #include "GestorSoporte.h"
+#include "GestorCliente.h"
 #pragma managed(pop)
 
 #include "MashallHelper.h"
-#include "Frmagregargenerico.h";
+#include "Frmagregargenerico.h"
 
 namespace SalesForceV3 {
     using namespace System::Collections::Generic;
@@ -17,6 +18,7 @@ namespace SalesForceV3 {
     public ref class FrmSoporte : public Form {
     private:
         GestorSoporte* gestor;
+        GestorCliente* gestorCliente;
 
         Panel^ pnlMiniSidebar;
         Panel^ pnlContenido;
@@ -31,11 +33,18 @@ namespace SalesForceV3 {
             ^ btnNavEventos, ^ btnNavHistorial, ^ btnNavGrafo;
         Button^ btnNavActivo;
 
+        List<String^>^ nodosResaltados; // Hito 2 : para resaltar nodos en el grafo 
+
+        Panel^ pnlGrafoDibujo;
+        ComboBox^ cmbVerticeInicio;
+        Label^ lblInfoGrafo;
+        ListBox^ lstRecorrido;
         enum class Vista { Casos, Soluciones, Tareas, Eventos, Historial, Grafo };
         Vista vistaActual;
 
     public:
-        FrmSoporte(GestorSoporte* g) : gestor(g) {
+        FrmSoporte(GestorSoporte* g, GestorCliente* gc) : gestor(g), gestorCliente(gc) {
+            nodosResaltados = gcnew List<String^>();
             CrearUI();
             CambiarVista(Vista::Casos, btnNavCasos);
         }
@@ -70,9 +79,8 @@ namespace SalesForceV3 {
             btnNavSoluciones = CrearNavBtn("  Soluciones  [Pila]");
             btnNavCasos = CrearNavBtn("  Casos  [Cola]");
 
-            btnNavGrafo->Enabled = false;
-            btnNavGrafo->ForeColor = Color::FromArgb(130, 165, 200);
             btnNavGrafo->Font = gcnew Drawing::Font("Segoe UI", 8.5f, FontStyle::Italic);
+            btnNavGrafo->Click += gcnew EventHandler(this, &FrmSoporte::navGrafo_Click);
 
             btnNavCasos->Click += gcnew EventHandler(this, &FrmSoporte::navCasos_Click);
             btnNavSoluciones->Click += gcnew EventHandler(this, &FrmSoporte::navSoluciones_Click);
@@ -98,7 +106,7 @@ namespace SalesForceV3 {
             b->BackColor = Color::FromArgb(0, 85, 170); b->ForeColor = Color::White;
             b->Font = gcnew Drawing::Font("Segoe UI", 9.5f);
             b->TextAlign = ContentAlignment::MiddleLeft;
-            b->Padding = System::Windows::Forms::Padding(10, 0, 0, 0); b->Cursor = Cursors::Hand;    
+            b->Padding = System::Windows::Forms::Padding(10, 0, 0, 0); b->Cursor = Cursors::Hand;
             return b;
         }
 
@@ -151,24 +159,145 @@ namespace SalesForceV3 {
             pnlGrid->Controls->Add(pnlBotones);
         }
 
+        // HITO 2
+
         void CrearPanelHito2() {
             pnlHito2 = gcnew Panel(); pnlHito2->Dock = DockStyle::Fill;
             pnlHito2->BackColor = Color::White; pnlHito2->Visible = false;
 
-            Label^ lbl = gcnew Label();
-            lbl->Text = "Grafo de Relaciones entre Cuentas\r\n\r\n"
-                "Esta funcionalidad estara disponible en el Hito 2.\r\n\r\n"
-                "Se implementara:\r\n"
-                "  - Grafo<string> con lista de adyacencia\r\n"
-                "  - BFS (Breadth-First Search)\r\n"
-                "  - DFS (Depth-First Search)\r\n"
-                "  - Visualizacion de red de relaciones entre cuentas";
-            lbl->Font = gcnew Drawing::Font("Segoe UI", 11.0f);
-            lbl->ForeColor = Color::FromArgb(80, 110, 150);
-            lbl->AutoSize = false;
-            lbl->Size = Drawing::Size(550, 250);
-            lbl->Location = Point(40, 60);
-            pnlHito2->Controls->Add(lbl);
+            Panel^ pnlControles = gcnew Panel();
+            pnlControles->Dock = DockStyle::Top; pnlControles->Height = 55;
+            pnlControles->Padding = System::Windows::Forms::Padding(8);
+
+            Label^ lblSel = gcnew Label();
+            lblSel->Text = "Cuenta de inicio:"; lblSel->AutoSize = true; lblSel->Location = Point(8, 18);
+
+            cmbVerticeInicio = gcnew ComboBox();
+            cmbVerticeInicio->DropDownStyle = ComboBoxStyle::DropDownList;
+            cmbVerticeInicio->Location = Point(115, 14); cmbVerticeInicio->Width = 220;
+
+            Button^ btnBFS = EstiloCRM::CrearBotonPrimario("  BFS");
+            Button^ btnDFS = EstiloCRM::CrearBotonSecundario("  DFS");
+            btnBFS->Location = Point(345, 12); btnBFS->Width = 90;
+            btnDFS->Location = Point(440, 12); btnDFS->Width = 90;
+            btnBFS->Click += gcnew EventHandler(this, &FrmSoporte::bfs_Click);
+            btnDFS->Click += gcnew EventHandler(this, &FrmSoporte::dfs_Click);
+
+            pnlControles->Controls->Add(lblSel);
+            pnlControles->Controls->Add(cmbVerticeInicio);
+            pnlControles->Controls->Add(btnBFS);
+            pnlControles->Controls->Add(btnDFS);
+
+            lstRecorrido = gcnew ListBox();
+            lstRecorrido->Dock = DockStyle::Right; lstRecorrido->Width = 220;
+
+            lblInfoGrafo = gcnew Label();
+            lblInfoGrafo->Dock = DockStyle::Bottom; lblInfoGrafo->Height = 26;
+            lblInfoGrafo->ForeColor = Color::FromArgb(30, 70, 120);
+            lblInfoGrafo->Padding = System::Windows::Forms::Padding(10, 4, 0, 0);
+
+            pnlGrafoDibujo = gcnew Panel();
+            pnlGrafoDibujo->Dock = DockStyle::Fill; pnlGrafoDibujo->BackColor = Color::White;
+            pnlGrafoDibujo->Paint += gcnew PaintEventHandler(this, &FrmSoporte::grafo_Paint);
+
+            pnlHito2->Controls->Add(pnlGrafoDibujo);
+            pnlHito2->Controls->Add(lstRecorrido);
+            pnlHito2->Controls->Add(lblInfoGrafo);
+            pnlHito2->Controls->Add(pnlControles);
+        }
+
+        // ─── Dibujo del grafo — vertices en circulo, aristas como lineas ────
+        void grafo_Paint(Object^ sender, PaintEventArgs^ e) {
+            Graphics^ g = e->Graphics;
+            g->SmoothingMode = Drawing2D::SmoothingMode::AntiAlias;
+
+            // El grafo (no la lista cruda de Cuenta) es la fuente de verdad de que
+            // vertices dibujar: asi lo que se ve coincide siempre con lo que BFS/DFS
+            // realmente pueden recorrer.
+            Grafo<string>* grafo = gestorCliente->getGrafoCuentas();
+            std::vector<string> verts = grafo->obtenerVertices();
+            if (verts.empty()) return;
+
+            List<String^>^ claves = gcnew List<String^>();
+            for (const string& v : verts) claves->Add(Str::M(v));
+
+            int cx = pnlGrafoDibujo->Width / 2;
+            int cy = pnlGrafoDibujo->Height / 2;
+            int radio = Math::Min(cx, cy) - 60;
+            if (radio < 40) radio = 40;
+
+            cli::array<Point>^ posiciones = gcnew cli::array<Point>(claves->Count);
+            for (int i = 0; i < claves->Count; i++) {
+                double angulo = 2 * Math::PI * i / claves->Count;
+                posiciones[i] = Point(cx + (int)(radio * Math::Cos(angulo)), cy + (int)(radio * Math::Sin(angulo)));
+            }
+
+            Pen^ lapizArista = gcnew Pen(Color::FromArgb(190, 205, 225), 1.5f);
+            for (size_t i = 0; i < verts.size(); i++) {
+                std::vector<string> vecinos = grafo->obtenerVecinos(verts[i]);
+                for (const string& b : vecinos) {
+                    int ib = claves->IndexOf(Str::M(b));
+                    // evita dibujar la misma arista dos veces (no dirigida)
+                    if (ib >= 0 && ib > (int)i) g->DrawLine(lapizArista, posiciones[i], posiciones[ib]);
+                }
+            }
+            delete lapizArista;
+
+            for (int i = 0; i < claves->Count; i++) {
+                bool enRecorrido = nodosResaltados->Contains(claves[i]);
+                Brush^ relleno = enRecorrido ? gcnew SolidBrush(Color::FromArgb(255, 140, 0))
+                    : gcnew SolidBrush(EstiloCRM::AzulOscuro());
+                int r = 16;
+                g->FillEllipse(relleno, posiciones[i].X - r, posiciones[i].Y - r, r * 2, r * 2);
+                g->DrawEllipse(Pens::White, posiciones[i].X - r, posiciones[i].Y - r, r * 2, r * 2);
+                g->DrawString(NombreVisible(claves[i]), gcnew Drawing::Font("Segoe UI", 7.5f), Brushes::Black,
+                    posiciones[i].X - 30, posiciones[i].Y + r + 2);
+                delete relleno;
+            }
+        }
+
+        String^ NombreVisible(String^ clave) {
+            int guion = clave->IndexOf("-");
+            return (guion == -1) ? clave : clave->Substring(guion + 1);
+        }
+
+        // ─── Preparar combo + estadisticas al entrar a la vista Grafo ───────
+        void PrepararGrafo() {
+            cmbVerticeInicio->Items->Clear();
+            NodoD<Cuenta>* n = gestorCliente->getCuentas()->getCabeza();
+            while (n) {
+                cmbVerticeInicio->Items->Add(n->dato.getId() + "-" + Str::M(n->dato.getNombre()));
+                n = n->siguiente;
+            }
+            if (cmbVerticeInicio->Items->Count > 0) cmbVerticeInicio->SelectedIndex = 0;
+
+            nodosResaltados->Clear();
+            lstRecorrido->Items->Clear();
+            lblInfoGrafo->Text = String::Format("Grafo de {0} cuentas y {1} relaciones (misma industria).",
+                gestorCliente->getGrafoCuentas()->contarVertices(), gestorCliente->getGrafoCuentas()->contarAristas());
+            pnlGrafoDibujo->Invalidate();
+        }
+
+        void bfs_Click(Object^, EventArgs^) { EjecutarRecorrido(true); }
+        void dfs_Click(Object^, EventArgs^) { EjecutarRecorrido(false); }
+
+        void EjecutarRecorrido(bool esBfs) {
+            if (cmbVerticeInicio->SelectedItem == nullptr) return;
+            string inicio = Str::N(cmbVerticeInicio->SelectedItem->ToString());
+            vector<string> orden = esBfs ? gestorCliente->getGrafoCuentas()->bfs(inicio)
+                : gestorCliente->getGrafoCuentas()->dfs(inicio);
+
+            lstRecorrido->Items->Clear();
+            nodosResaltados->Clear();
+            int paso = 1;
+            for (const string& nombre : orden) {
+                String^ clave = Str::M(nombre);
+                lstRecorrido->Items->Add(String::Format("{0}. {1}", paso++, NombreVisible(clave)));
+                nodosResaltados->Add(clave);
+            }
+            lblInfoGrafo->Text = String::Format("{0}: {1} cuenta(s) alcanzada(s) desde \"{2}\".",
+                esBfs ? "BFS" : "DFS", orden.size(), NombreVisible(cmbVerticeInicio->SelectedItem->ToString()));
+            pnlGrafoDibujo->Invalidate();
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -186,12 +315,13 @@ namespace SalesForceV3 {
             case Vista::Tareas:     ConfigurarTareas();     break;
             case Vista::Eventos:    ConfigurarEventos();    break;
             case Vista::Historial:  ConfigurarHistorial();  break;
+            case Vista::Grafo:		PrepararGrafo();        break;
             }
         }
 
         void HighlightNav(Button^ b) {
             cli::array<Button^>^ navs = gcnew cli::array<Button^>{ btnNavCasos, btnNavSoluciones, btnNavTareas,
-                                                                     btnNavEventos, btnNavHistorial };
+                btnNavEventos, btnNavHistorial, btnNavGrafo };
             for each (Button ^ n in navs) n->BackColor = Color::FromArgb(0, 85, 170);
             if (b->Enabled) b->BackColor = Color::FromArgb(0, 55, 120);
         }
@@ -290,7 +420,7 @@ namespace SalesForceV3 {
         // ═══════════════════════════════════════════════════════════
         //  EVENTOS
         // ═══════════════════════════════════════════════════════════
-       
+
         void accion1_Click(Object^, EventArgs^) {
             switch (vistaActual) {
             case Vista::Casos:      AgregarCaso();      break;
@@ -326,7 +456,10 @@ namespace SalesForceV3 {
                 ConfigurarTareas(); break;
             case Vista::Eventos:
                 if (dgvDatos->SelectedRows->Count == 0) return;
-                dgvDatos->Rows->Remove(dgvDatos->SelectedRows[0]); break;
+                dgvDatos->Rows->Remove(dgvDatos->SelectedRows[0]);
+                MessageBox::Show("El evento se elimino de la vista. Si deseas conservar este cambio, haz clic en el boton \"Guardar\".",
+                    "Recuerda guardar", MessageBoxButtons::OK, MessageBoxIcon::Information);
+                break;
             case Vista::Historial:
                 if (gestor->getPilaHistorial()->estaVacia()) return;
                 gestor->desapilarHistorial();
@@ -445,6 +578,7 @@ namespace SalesForceV3 {
 
         // ─── Navegación ───────────────────────────────────────────
         void navCasos_Click(Object^, EventArgs^) { btnNavActivo = btnNavCasos;      CambiarVista(Vista::Casos, btnNavCasos); }
+        void navGrafo_Click(Object^, EventArgs^) { btnNavActivo = btnNavGrafo; CambiarVista(Vista::Grafo, btnNavGrafo); }
         void navSoluciones_Click(Object^, EventArgs^) { btnNavActivo = btnNavSoluciones; CambiarVista(Vista::Soluciones, btnNavSoluciones); }
         void navTareas_Click(Object^, EventArgs^) { btnNavActivo = btnNavTareas;     CambiarVista(Vista::Tareas, btnNavTareas); }
         void navEventos_Click(Object^, EventArgs^) { btnNavActivo = btnNavEventos;    CambiarVista(Vista::Eventos, btnNavEventos); }

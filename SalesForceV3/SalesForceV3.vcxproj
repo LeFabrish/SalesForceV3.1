@@ -128,6 +128,7 @@
     <ClCompile Include="Campoformulario.cpp" />
     <ClCompile Include="Frmagregargenerico.cpp" />
     <ClCompile Include="FrmClientes.cpp" />
+    <ClCompile Include="Frmlogin.cpp" />
     <ClCompile Include="FrmPrincipalh.cpp" />
     <ClCompile Include="FrmSoporte.cpp" />
     <ClCompile Include="FrmVentas.cpp" />
@@ -141,6 +142,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Arbolavl.h" />
+    <ClInclude Include="ArbolBinario.h" />
     <ClInclude Include="Campoformulario.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -160,6 +163,9 @@
     <ClInclude Include="FrmClientes.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Frmlogin.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="FrmPrincipalh.h">
       <FileType>CppForm</FileType>
     </ClInclude>
@@ -173,6 +179,7 @@
     <ClInclude Include="GestorCliente.h" />
     <ClInclude Include="GestorSoporte.h" />
     <ClInclude Include="GestorVenta.h" />
+    <ClInclude Include="Grafo.h" />
     <ClInclude Include="HashTable.h" />
     <ClInclude Include="Historial.h" />
     <ClInclude Include="Interaccion.h" />
@@ -200,8 +207,15 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="casos.txt" />
+    <Text Include="clientesPotenciales.txt" />
+    <Text Include="contratos.txt" />
+    <Text Include="cotizaciones.txt" />
     <Text Include="cuentas.txt" />
+    <Text Include="eventos.txt" />
+    <Text Include="historial.txt" />
+    <Text Include="oportunidades.txt" />
     <Text Include="productos.txt" />
+    <Text Include="tareas.txt" />
     <Text Include="usuarios.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

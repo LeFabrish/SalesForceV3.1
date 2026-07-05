@@ -53,12 +53,19 @@ Class SalesForceV3.FrmAgregarGenerico: AutoLayout, AnsiClass, Class, Public, Bef
 Class SalesForceV3.FrmClientes: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(GestorCliente*): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Class SalesForceV3.FrmLogin: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    System.String ModuloSeleccionado 'get ' : 
+  Methods:
+    get_ModuloSeleccionado(): PrivateScope, Public, HideBySig, SpecialName
 Class SalesForceV3.FrmVentas: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(GestorVenta*): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
 Class SalesForceV3.FrmSoporte: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
-    Void .ctor(GestorSoporte*): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+    Void .ctor(GestorSoporte*, GestorCliente*): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
 Class SalesForceV3.FrmPrincipal: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName

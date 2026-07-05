@@ -1,0 +1,5 @@
+1, "Pablo Huaman",  "phuaman@startup.pe",   "CRM Software"
+2, "Rosa Quispe",   "rquispe@empresa.pe",   "Cloud Solutions"
+3, "David Castro",  "dcastro@corp.com",     "ERP Integration"
+4, "Elena Vargas",  "evargas@tech.io",      "API Services"
+5, "Miguel Cano",   "mcano@pyme.pe",        "Marketing Automation"

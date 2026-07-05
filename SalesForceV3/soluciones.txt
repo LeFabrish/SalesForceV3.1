@@ -1,2 +1,5 @@
-5,0,Nueva solucion,01/01/2025
-7,0,Nueva solucion,01/01/2025
+8,10,"Ajustamos las notificaciones en tiempo real, enviando directamente al correo como importante no spam", 03/07/2026
+1,1,"Parche de actualizacion v2.1 aplicado","05/04/2025"
+2, 2, "Reconfiguracion de endpoints API",           "10/04/2025"
+3, 4, "Documentacion de API entregada al cliente",  "12/04/2025"
+4, 5, "Optimizacion de consultas en reportes",      "18/04/2025"

@@ -86,6 +86,7 @@ namespace SalesForceV3 {
             btnNavContactos = CrearNavBtn("  Contactos");
             btnNavCuentas = CrearNavBtn("  Cuentas");
 
+
             btnNavCuentas->Click += gcnew EventHandler(this, &FrmClientes::navCuentas_Click);
             btnNavContactos->Click += gcnew EventHandler(this, &FrmClientes::navContactos_Click);
             btnNavUsuarios->Click += gcnew EventHandler(this, &FrmClientes::navUsuarios_Click);
@@ -138,6 +139,7 @@ namespace SalesForceV3 {
             pnlContenido->Controls->Add(pnlGrid);
             pnlContenido->Controls->Add(pnlHash);
             pnlContenido->Controls->Add(lblTitulo);
+            pnlContenido->Controls->Add(pnlAvl);
             this->Controls->Add(pnlContenido);
         }
 
@@ -176,6 +178,11 @@ namespace SalesForceV3 {
             pnlGrid->Controls->Add(dgvDatos);
             pnlGrid->Controls->Add(pnlBotones);
         }
+        Panel^ pnlAvl;
+        ListBox^ lstAvl;
+        Label^ lblAvlInfo;
+        Button^ btnAvlInOrden, ^ btnAvlPreOrden, ^ btnAvlPostOrden;
+
 
         void CrearPanelHash() {
             pnlHash = gcnew Panel();
@@ -369,8 +376,11 @@ namespace SalesForceV3 {
             dgvDatos->EndEdit();
             if (dgvDatos->SelectedRows->Count == 0) return;
             if (MessageBox::Show("¿Eliminar la fila seleccionada?", "Confirmar",
-                MessageBoxButtons::YesNo, MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::Yes)
+                MessageBoxButtons::YesNo, MessageBoxIcon::Question) == System::Windows::Forms::DialogResult::Yes) {
                 dgvDatos->Rows->Remove(dgvDatos->SelectedRows[0]);
+                MessageBox::Show("La fila se elimino de la vista. Si deseas conservar este cambio, haz clic en el boton \"Guardar\".",
+                    "Recuerda guardar", MessageBoxButtons::OK, MessageBoxIcon::Information);
+            }
         }
 
         void accion3_Click(Object^, EventArgs^) {
@@ -604,5 +614,5 @@ namespace SalesForceV3 {
         this->Name = L"FrmClientes";
         this->ResumeLayout(false);
     }
-};
+    };
 }

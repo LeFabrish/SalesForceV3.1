@@ -1,1 +1,5 @@
-1,Email,Blabla,21/07/2026,1,27
+1, "Llamada",  "Presentacion del CRM",     "01/06/2025", 1, 2
+2, "Email",    "Cotizacion enviada",       "03/06/2025", 2, 2
+3, "Reunion",  "Demo en oficinas cliente", "05/06/2025", 3, 2
+4, "Llamada",  "Seguimiento propuesta",    "07/06/2025", 4, 2
+5, "Email",    "Contrato enviado",         "10/06/2025", 5, 2

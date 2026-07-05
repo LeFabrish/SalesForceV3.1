@@ -1,1 +1,4 @@
-1,Fabricio,Cáceres,Empleado,991-948-072,caceres@gmail.com,12
+1,"Juan","Perez","Gerente TI","+51 999 001 001","jperez@claro.com.pe",1
+2,"Maria","Lopez","Dir. Comercial","+51 999 002 002","mlopez@bcp.com.pe",2
+4,"Ana","Torres","Jefa Marketing","+51 999 004 004","atorres@alicorp.pe",4
+5,"Luis","Fernandez","Gcia. Ventas","+51 999 005 005","lfernandez@falabella.pe",5

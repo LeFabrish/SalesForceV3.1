@@ -1,0 +1,4 @@
+1, "Clientes", "Alta de cuenta Claro Peru",      "01/04/2025"
+2, "Ventas",   "Cierre de contrato con BCP",     "15/03/2025"
+3, "Soporte",  "Resolucion caso #1 (pagos)",     "05/04/2025"
+4, "Ventas",   "Nueva oportunidad: E-commerce",  "20/05/2025"

@@ -10,6 +10,7 @@
 #include "ListaDoble.h"
 #include "ListaSimple.h"
 #include "Cola.h"
+#include "ArbolBinario.h"
 #include "Ordenador.h"
 #include "GestorArchivos.h"
 #include "Cliente_Potencial.h"
@@ -29,6 +30,7 @@ private:
     ListaSimple<Contrato>    contratos;
     GestorArchivos           gestor;
     vector<double>           dataSetPrecios;
+    ArbolBinario<Oportunidad> arbolOportunidades; // HITO "2
     int contCliente = 1, contOportunidad = 1, contProducto = 1;
     int contCotizacion = 1, contContrato = 1;
 
@@ -75,12 +77,21 @@ public:
     }
 
     // ─── OPORTUNIDADES ────────────────────────────────────────────
+    GestorVenta() : arbolOportunidades([](const Oportunidad& a, const Oportunidad& b) {
+        return a.getValorEsperado() < b.getValorEsperado();
+        }) {
+    }
+    
     void insertarOportunidad(Oportunidad o) {
         oportunidades.insertar(o);
+        arbolOportunidades.insertar(o);
         if (o.getId() >= contOportunidad) contOportunidad = o.getId() + 1;
     }
 
-    void limpiarOportunidades() { oportunidades.limpiar(); contOportunidad = 1; }
+    void limpiarOportunidades() {
+        oportunidades.limpiar(); contOportunidad = 1;
+        arbolOportunidades.vaciar();
+    }
 
     void guardarOportunidades() const {
         auto* lineas = new ListaSimple<string>();
@@ -145,6 +156,7 @@ public:
     }
 
     ListaDoble<Oportunidad>* getOportunidades() { return &oportunidades; }
+    ArbolBinario<Oportunidad>* getArbolOportunidades() { return &arbolOportunidades; }
     int getProximoIdOportunidad() { return contOportunidad; }
 
     // ─── PRODUCTOS ────────────────────────────────────────────────

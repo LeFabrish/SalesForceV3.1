@@ -1,0 +1,6 @@
+1, "Renovacion contrato Claro",  50000.0,  "Negociacion"
+2, "Implementacion CRM BCP",     150000.0, "Prospeccion"
+3, "Actualizacion Interbank",     80000.0,  "Negociacion"
+4, "Campana digital Alicorp",    35000.0,  "Cerrado"
+5, "E-commerce Falabella",       200000.0, "Prospeccion"
+6, "Soporte anual Claro",        24000.0,  "Negociacion"
